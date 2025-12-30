@@ -17,6 +17,8 @@ limitations under the License.
 package metrics
 
 import (
+	"sync"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
@@ -36,17 +38,27 @@ type Recorder struct {
 	// Custom metrics can be added here
 }
 
+var (
+	collectorsRegistered bool
+	collectorsMu         sync.Mutex
+)
+
 // NewRecorder creates a new metrics recorder for a component
 func NewRecorder(componentName string) *Recorder {
 	recorder := &Recorder{
 		componentName: componentName,
 	}
 	
-	// Register standard Prometheus collectors
-	metrics.Registry.MustRegister(
-		collectors.NewGoCollector(),
-		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
-	)
+	// Register standard Prometheus collectors (only once)
+	collectorsMu.Lock()
+	if !collectorsRegistered {
+		metrics.Registry.MustRegister(
+			collectors.NewGoCollector(),
+			collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+		)
+		collectorsRegistered = true
+	}
+	collectorsMu.Unlock()
 	
 	// Reconciliation counter
 	recorder.reconciliationsTotal = prometheus.NewCounterVec(
