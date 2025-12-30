@@ -22,11 +22,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const (
@@ -45,7 +45,7 @@ const (
 // ensures consistency across replicas.
 type LeaderGuard struct {
 	client        client.Client
-	log           log.Logger
+	log           logr.Logger
 	isLeaderCache bool
 	mu            sync.RWMutex
 	podName       string
@@ -56,7 +56,7 @@ type LeaderGuard struct {
 // It reads POD_NAME and POD_NAMESPACE from environment variables.
 // If POD_NAME is empty (e.g., running outside a pod), it defaults to
 // assuming leader status (returns true for IsLeader checks).
-func NewLeaderGuard(client client.Client, logger log.Logger) *LeaderGuard {
+func NewLeaderGuard(client client.Client, logger logr.Logger) *LeaderGuard {
 	podName := os.Getenv("POD_NAME")
 	if podName == "" {
 		podName = os.Getenv("HOSTNAME")
