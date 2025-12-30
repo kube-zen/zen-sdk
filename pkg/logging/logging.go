@@ -31,6 +31,26 @@ type Logger struct {
 	componentName string
 }
 
+// Info logs an info message
+func (l *Logger) Info(msg string, fields ...zap.Field) {
+	l.Logger.Info(msg, fields...)
+}
+
+// Error logs an error message
+func (l *Logger) Error(err error, msg string, fields ...zap.Field) {
+	l.Logger.Error(msg, append(fields, zap.Error(err))...)
+}
+
+// Debug logs a debug message
+func (l *Logger) Debug(msg string, fields ...zap.Field) {
+	l.Logger.Debug(msg, fields...)
+}
+
+// Warn logs a warning message
+func (l *Logger) Warn(msg string, fields ...zap.Field) {
+	l.Logger.Warn(msg, fields...)
+}
+
 // NewLogger creates a new structured logger for a component
 func NewLogger(componentName string) *Logger {
 	// Use controller-runtime's zap logger configuration
