@@ -21,6 +21,7 @@ import (
 	"os"
 	"time"
 
+	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -72,6 +73,20 @@ func RequirePodNamespace() (string, error) {
 	return "", fmt.Errorf("POD_NAMESPACE environment variable must be set or service account namespace file must be readable")
 }
 
+// ApplyRestConfigDefaults sets recommended REST client defaults for controller-runtime.
+// This ensures consistent QPS/Burst settings across all controllers using zen-sdk.
+//
+// Parameters:
+//   - config: Pointer to rest.Config to modify
+func ApplyRestConfigDefaults(config *rest.Config) {
+	if config.QPS == 0 {
+		config.QPS = 50 // Default is 20, increase for faster reconciliation
+	}
+	if config.Burst == 0 {
+		config.Burst = 100 // Default is 30, increase for burst handling
+	}
+}
+
 // Options configures leader election for controller-runtime Manager (legacy API, kept for compatibility)
 type Options struct {
 	// LeaseName is the name of the Lease resource used for leader election
@@ -97,7 +112,7 @@ type Options struct {
 func DefaultOptions(leaseName string) Options {
 	return Options{
 		LeaseName:     leaseName,
-		Enable:         false,
+		Enable:        false,
 		LeaseDuration: 15 * time.Second,
 		RenewDeadline: 10 * time.Second,
 		RetryPeriod:   2 * time.Second,

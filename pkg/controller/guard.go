@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package controller provides controller utilities.
+// DEPRECATED: LeaderGuard is deprecated. Use controller-runtime's built-in leader election
+// via zen-sdk/pkg/leader.ApplyRequiredLeaderElection() instead.
+// This package is kept for backward compatibility only and will be removed in a future version.
 package controller
 
 import (
@@ -30,15 +34,18 @@ import (
 )
 
 const (
-	// AnnotationRole is the annotation key set by zen-lead controller
+	// AnnotationRole is deprecated. Do not use.
+	// DEPRECATED: zen-lead no longer mutates pods with leader annotations.
+	// Use controller-runtime's built-in leader election instead.
 	AnnotationRole = "zen-lead/role"
-	// RoleLeader indicates this pod is the leader
+	// RoleLeader is deprecated. Do not use.
 	RoleLeader = "leader"
 )
 
-// LeaderGuard wraps a reconcile.Reconciler to prevent "Split Brain" scenarios
-// where multiple replicas try to work at the same time when using external
-// leader election (zen-lead controller).
+// LeaderGuard wraps a reconcile.Reconciler to prevent "Split Brain" scenarios.
+// DEPRECATED: This approach relies on pod annotations set by zen-lead, which is incompatible
+// with zen-lead's Day-0 "no pod mutation" contract. Use controller-runtime's built-in leader
+// election via zen-sdk/pkg/leader.ApplyRequiredLeaderElection() instead.
 //
 // This guard ensures only the leader pod processes reconciliation events,
 // while follower pods wait and requeue. This prevents duplicate work and
@@ -53,6 +60,7 @@ type LeaderGuard struct {
 }
 
 // NewLeaderGuard creates a new LeaderGuard instance.
+// DEPRECATED: Use controller-runtime's built-in leader election instead.
 // It reads POD_NAME and POD_NAMESPACE from environment variables.
 // If POD_NAME is empty (e.g., running outside a pod), it defaults to
 // assuming leader status (returns true for IsLeader checks).
@@ -64,36 +72,23 @@ func NewLeaderGuard(client client.Client, logger logr.Logger) *LeaderGuard {
 
 	podNamespace := os.Getenv("POD_NAMESPACE")
 	if podNamespace == "" {
-		// Try to read from service account namespace
+		// Try to read from service account namespace file
 		if data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
 			podNamespace = string(data)
 		}
 	}
 
-	guard := &LeaderGuard{
-		client:        client,
-		log:           logger,
-		isLeaderCache: podName == "", // Default to leader if not in a pod (local dev)
-		podName:       podName,
-		podNamespace:  podNamespace,
+	return &LeaderGuard{
+		client:       client,
+		log:          logger,
+		podName:      podName,
+		podNamespace: podNamespace,
 	}
-
-	// If running outside a pod, log a warning
-	if podName == "" {
-		logger.Info("POD_NAME not set, assuming leader status (local development mode)")
-	}
-
-	return guard
 }
 
-// Wrap wraps an inner reconcile.Reconciler with leader election checks.
-// The returned reconciler will only execute the inner reconciler if this
-// pod is the leader (as determined by zen-lead/role annotation).
-//
-// Fast Path: If cached as leader (read lock), execute immediately.
-// Slow Path: If not cached as leader, check pod annotations (write lock).
-//
-// This ensures only the leader pod processes reconciliation events, while
+// Wrap wraps a reconcile.Reconciler with leader guard logic.
+// DEPRECATED: Use controller-runtime's built-in leader election instead.
+// Only the leader pod processes reconciliation events; all
 // followers requeue and wait.
 func (lg *LeaderGuard) Wrap(inner reconcile.Reconciler) reconcile.Reconciler {
 	return reconcile.Func(func(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
@@ -139,11 +134,11 @@ func (lg *LeaderGuard) Wrap(inner reconcile.Reconciler) reconcile.Reconciler {
 			return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
 		}
 
-		// Check zen-lead/role annotation
+		// Check zen-lead/role annotation (DEPRECATED: zen-lead no longer sets this)
 		role, exists := pod.Annotations[AnnotationRole]
 		if !exists {
 			// No annotation means not participating in leader election (or zen-lead not running)
-			lg.log.V(4).Info("No zen-lead/role annotation found, assuming follower",
+			lg.log.V(4).Info("No zen-lead/role annotation found, assuming follower (DEPRECATED: use controller-runtime leader election)",
 				"pod", lg.podName,
 			)
 			return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
@@ -152,28 +147,17 @@ func (lg *LeaderGuard) Wrap(inner reconcile.Reconciler) reconcile.Reconciler {
 		if role == RoleLeader {
 			// We are the leader! Update cache and execute inner reconciler
 			lg.isLeaderCache = true
-			lg.log.Info("Elected as leader, processing reconciliation",
+			lg.log.Info("Elected as leader, processing reconciliation (DEPRECATED: use controller-runtime leader election)",
 				"pod", lg.podName,
 			)
 			return inner.Reconcile(ctx, req)
 		}
 
 		// We are a follower, log and requeue
-		lg.isLeaderCache = false
-		lg.log.V(4).Info("I am a follower, skipping reconciliation",
+		lg.log.V(4).Info("Not leader, requeuing (DEPRECATED: use controller-runtime leader election)",
 			"pod", lg.podName,
 			"role", role,
 		)
 		return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
 	})
 }
-
-// IsLeader returns the cached leader status (thread-safe read).
-// This is a convenience method for checking leader status without
-// triggering a reconciliation.
-func (lg *LeaderGuard) IsLeader() bool {
-	lg.mu.RLock()
-	defer lg.mu.RUnlock()
-	return lg.isLeaderCache
-}
-
