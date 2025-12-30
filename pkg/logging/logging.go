@@ -67,11 +67,18 @@ func NewLogger(componentName string) *Logger {
 	zapLogger := ctrlzap.New(ctrlzap.UseFlagOptions(&opts))
 	ctrl.SetLogger(zapLogger)
 	
-	// Get underlying zap.Logger
-	underlyingLogger := zapLogger.GetSink().(zap.Sink).(*zap.Logger)
+	// Create a new zap logger with component context
+	var baseLogger *zap.Logger
+	if isDevelopment() {
+		baseLogger, _ = zap.NewDevelopment()
+	} else {
+		baseLogger, _ = zap.NewProduction()
+	}
+	
+	componentLogger := baseLogger.With(zap.String("component", componentName))
 	
 	return &Logger{
-		Logger:        underlyingLogger,
+		Logger:        componentLogger,
 		componentName: componentName,
 	}
 }
