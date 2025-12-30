@@ -22,7 +22,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 // Logger wraps zap.Logger with component-specific context
@@ -54,9 +54,9 @@ func (l *Logger) Warn(msg string, fields ...zap.Field) {
 // NewLogger creates a new structured logger for a component
 func NewLogger(componentName string) *Logger {
 	// Use controller-runtime's zap logger configuration
-	opts := zap.Options{
+	opts := ctrlzap.Options{
 		Development: isDevelopment(),
-		EncoderConfigOptions: []zap.EncoderConfigOption{
+		EncoderConfigOptions: []ctrlzap.EncoderConfigOption{
 			func(config *zapcore.EncoderConfig) {
 				config.EncodeTime = zapcore.ISO8601TimeEncoder
 				config.EncodeLevel = zapcore.CapitalLevelEncoder
@@ -64,11 +64,14 @@ func NewLogger(componentName string) *Logger {
 		},
 	}
 	
-	zapLogger := zap.New(zap.UseFlagOptions(&opts))
+	zapLogger := ctrlzap.New(ctrlzap.UseFlagOptions(&opts))
 	ctrl.SetLogger(zapLogger)
 	
+	// Get underlying zap.Logger
+	underlyingLogger := zapLogger.GetSink().(zap.Sink).(*zap.Logger)
+	
 	return &Logger{
-		Logger:        zapLogger,
+		Logger:        underlyingLogger,
 		componentName: componentName,
 	}
 }

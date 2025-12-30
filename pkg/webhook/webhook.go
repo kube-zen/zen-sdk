@@ -34,9 +34,10 @@ type Patch struct {
 }
 
 // GeneratePatch generates a JSON patch from an object and updates
-func GeneratePatch(obj runtime.Object, updates map[string]interface{}) (admission.Patch, error) {
+// Returns a JSON patch as []byte that can be used with admission.Response
+func GeneratePatch(obj runtime.Object, updates map[string]interface{}) ([]byte, error) {
 	// Convert to unstructured for easier manipulation
-	unstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+	_, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert object to unstructured: %w", err)
 	}
@@ -62,7 +63,7 @@ func GeneratePatch(obj runtime.Object, updates map[string]interface{}) (admissio
 }
 
 // GenerateAddPatch generates a JSON patch to add a field
-func GenerateAddPatch(path string, value interface{}) (admission.Patch, error) {
+func GenerateAddPatch(path string, value interface{}) ([]byte, error) {
 	patch := Patch{
 		Op:    "add",
 		Path:  path,
@@ -78,7 +79,7 @@ func GenerateAddPatch(path string, value interface{}) (admission.Patch, error) {
 }
 
 // GenerateRemovePatch generates a JSON patch to remove a field
-func GenerateRemovePatch(path string) (admission.Patch, error) {
+func GenerateRemovePatch(path string) ([]byte, error) {
 	patch := Patch{
 		Op:   "remove",
 		Path: path,
