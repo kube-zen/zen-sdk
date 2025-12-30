@@ -17,39 +17,83 @@ limitations under the License.
 package leader
 
 import (
+	"fmt"
+	"os"
 	"time"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-// Options configures leader election for controller-runtime Manager
+// ApplyRequiredLeaderElection configures leader election for controller-runtime Manager.
+// This function ALWAYS enables leader election (no toggle) and sets required options.
+//
+// Parameters:
+//   - opts: Pointer to ctrl.Options to modify
+//   - component: Component name (e.g., "zen-lead-controller")
+//   - namespace: Namespace for leader election Lease (required)
+//   - idOverride: Optional override for leader election ID. If empty, uses component-based ID.
+func ApplyRequiredLeaderElection(opts *ctrl.Options, component string, namespace string, idOverride string) {
+	// Always enable leader election (mandatory for HA safety)
+	opts.LeaderElection = true
+
+	// Set leader election ID
+	if idOverride != "" {
+		opts.LeaderElectionID = idOverride
+	} else {
+		opts.LeaderElectionID = fmt.Sprintf("%s-leader-election", component)
+	}
+
+	// Set namespace (required)
+	opts.LeaderElectionNamespace = namespace
+
+	// Set ReleaseOnCancel to ensure clean shutdown
+	opts.LeaderElectionReleaseOnCancel = true
+}
+
+// RequirePodNamespace returns the pod namespace from environment or service account file.
+// This function hard-fails if namespace cannot be determined (required for leader election).
+//
+// Returns:
+//   - namespace: Pod namespace
+//   - error: If namespace cannot be determined
+func RequirePodNamespace() (string, error) {
+	// Try environment variable first (Downward API)
+	if ns := os.Getenv("POD_NAMESPACE"); ns != "" {
+		return ns, nil
+	}
+
+	// Fallback to service account namespace file
+	if data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
+		if ns := string(data); ns != "" {
+			return ns, nil
+		}
+	}
+
+	return "", fmt.Errorf("POD_NAMESPACE environment variable must be set or service account namespace file must be readable")
+}
+
+// Options configures leader election for controller-runtime Manager (legacy API, kept for compatibility)
 type Options struct {
 	// LeaseName is the name of the Lease resource used for leader election
-	// Default: "<component-name>-leader-election"
 	LeaseName string
 
-	// Enable enables leader election
-	// Default: false
+	// Enable enables leader election (deprecated: use ApplyRequiredLeaderElection for mandatory LE)
 	Enable bool
 
 	// Namespace is the namespace where the Lease resource is created
-	// If empty, uses the manager's namespace
 	Namespace string
 
 	// LeaseDuration is how long a leader holds the lease before it expires
-	// Default: 15 seconds
 	LeaseDuration time.Duration
 
 	// RenewDeadline is the time to renew the lease before losing leadership
-	// Default: 10 seconds (must be < LeaseDuration)
 	RenewDeadline time.Duration
 
 	// RetryPeriod is how often to retry acquiring leadership
-	// Default: 2 seconds
 	RetryPeriod time.Duration
 }
 
-// DefaultOptions returns default leader election options
+// DefaultOptions returns default leader election options (legacy API)
 func DefaultOptions(leaseName string) Options {
 	return Options{
 		LeaseName:     leaseName,
@@ -60,28 +104,24 @@ func DefaultOptions(leaseName string) Options {
 	}
 }
 
-// Setup configures leader election options for controller-runtime Manager
-// This is a helper function that modifies ctrl.Options to enable leader election
+// Setup configures leader election options for controller-runtime Manager (legacy API)
 func Setup(opts Options) func(*ctrl.Options) {
 	return func(managerOpts *ctrl.Options) {
 		if !opts.Enable {
-			return // Leader election disabled, no changes needed
+			return
 		}
 
-		// Set leader election ID (Lease name)
 		if opts.LeaseName != "" {
 			managerOpts.LeaderElectionID = opts.LeaseName
 		}
 
-		// Enable leader election
 		managerOpts.LeaderElection = true
+		managerOpts.LeaderElectionReleaseOnCancel = true
 
-		// Set namespace if provided
 		if opts.Namespace != "" {
 			managerOpts.LeaderElectionNamespace = opts.Namespace
 		}
 
-		// Set lease duration
 		if opts.LeaseDuration > 0 {
 			managerOpts.LeaseDuration = func() *time.Duration {
 				d := opts.LeaseDuration
@@ -89,7 +129,6 @@ func Setup(opts Options) func(*ctrl.Options) {
 			}()
 		}
 
-		// Set renew deadline
 		if opts.RenewDeadline > 0 {
 			managerOpts.RenewDeadline = func() *time.Duration {
 				d := opts.RenewDeadline
@@ -97,7 +136,6 @@ func Setup(opts Options) func(*ctrl.Options) {
 			}()
 		}
 
-		// Set retry period
 		if opts.RetryPeriod > 0 {
 			managerOpts.RetryPeriod = func() *time.Duration {
 				d := opts.RetryPeriod
@@ -107,13 +145,9 @@ func Setup(opts Options) func(*ctrl.Options) {
 	}
 }
 
-// ManagerOptions returns ctrl.Options with leader election configured
-// This is a convenience function for creating manager options directly
+// ManagerOptions returns ctrl.Options with leader election configured (legacy API)
 func ManagerOptions(baseOpts ctrl.Options, leaderOpts Options) ctrl.Options {
-	// Apply leader election configuration
 	setupFunc := Setup(leaderOpts)
 	setupFunc(&baseOpts)
-
 	return baseOpts
 }
-
