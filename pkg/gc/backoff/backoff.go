@@ -1,0 +1,91 @@
+/*
+Copyright 2025 Kube-ZEN Contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// Package backoff provides exponential backoff primitives for retry operations.
+// Extracted from zen-gc to enable reuse across components.
+package backoff
+
+import (
+	"time"
+
+	"k8s.io/apimachinery/pkg/util/wait"
+)
+
+// Backoff implements exponential backoff for retry operations.
+type Backoff struct {
+	backoff wait.Backoff
+	step    int
+}
+
+// Config holds backoff configuration.
+type Config struct {
+	Steps    int           // Maximum number of retry steps
+	Duration time.Duration // Initial duration
+	Factor   float64       // Multiplier for each step
+	Jitter   float64       // Randomization factor (0.0 to 1.0)
+	Cap      time.Duration // Maximum duration cap
+}
+
+// DefaultConfig returns a default backoff configuration.
+func DefaultConfig() Config {
+	return Config{
+		Steps:    5,
+		Duration: 100 * time.Millisecond,
+		Factor:   2.0,
+		Jitter:   0.1,
+		Cap:      30 * time.Second,
+	}
+}
+
+// NewBackoff creates a new backoff instance with the given configuration.
+func NewBackoff(config Config) *Backoff {
+	return &Backoff{
+		backoff: wait.Backoff{
+			Steps:    config.Steps,
+			Duration: config.Duration,
+			Factor:   config.Factor,
+			Jitter:   config.Jitter,
+			Cap:      config.Cap,
+		},
+		step: 0,
+	}
+}
+
+// Next returns the next backoff duration and increments the step counter.
+// Returns 0 if maximum steps reached.
+func (b *Backoff) Next() time.Duration {
+	if b.step >= b.backoff.Steps {
+		return 0
+	}
+	b.step++
+	return b.backoff.Step()
+}
+
+// Reset resets the backoff to the initial state.
+func (b *Backoff) Reset() {
+	b.step = 0
+}
+
+// Step returns the current step number (0-indexed).
+func (b *Backoff) Step() int {
+	return b.step
+}
+
+// IsExhausted returns true if the backoff has reached maximum steps.
+func (b *Backoff) IsExhausted() bool {
+	return b.step >= b.backoff.Steps
+}
+
