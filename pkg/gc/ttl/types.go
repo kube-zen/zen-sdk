@@ -54,4 +54,3 @@ type Spec struct {
 
 // Config is an alias for Spec for backward compatibility.
 type Config = Spec
-

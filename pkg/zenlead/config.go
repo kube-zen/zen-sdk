@@ -102,11 +102,11 @@ func ControllerRuntimeDefaults(cfg *rest.Config) {
 // Returns:
 //   - Configured ctrl.Options with leader election settings
 //   - error if configuration is invalid
-func PrepareManagerOptions(base *ctrl.Options, le LeaderElectionConfig) (ctrl.Options, error) {
+func PrepareManagerOptions(base *ctrl.Options, le *LeaderElectionConfig) (ctrl.Options, error) {
 	opts := *base
 
 	// Validate configuration
-	if err := validateConfig(&le); err != nil {
+	if err := validateConfig(le); err != nil {
 		return opts, fmt.Errorf("invalid leader election config: %w", err)
 	}
 

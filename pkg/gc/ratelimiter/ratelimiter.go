@@ -72,4 +72,3 @@ func (rl *RateLimiter) SetRate(maxPerSecond int) {
 func (rl *RateLimiter) GetRate() float64 {
 	return float64(rl.limiter.Limit())
 }
-
