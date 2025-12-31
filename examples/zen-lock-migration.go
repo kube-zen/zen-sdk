@@ -1,3 +1,5 @@
+//go:build examples
+
 /*
 Example: Migrating zen-lock to use zen-sdk
 

@@ -1,3 +1,5 @@
+//go:build examples
+
 /*
 Example: Using zen-sdk/pkg/leader in a controller
 
