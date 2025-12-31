@@ -182,4 +182,3 @@ func TestBackoff_EdgeBehavior(t *testing.T) {
 		t.Errorf("With Factor=1.0, durations should be equal: %v vs %v", d1, d2)
 	}
 }
-

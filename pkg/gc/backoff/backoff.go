@@ -70,7 +70,7 @@ func (b *Backoff) Next() time.Duration {
 	if b.step >= b.backoff.Steps {
 		return 0
 	}
-	
+
 	// Calculate duration for current step (0-indexed)
 	// Step 0 = Duration
 	// Step 1 = Duration * Factor
@@ -83,16 +83,16 @@ func (b *Backoff) Next() time.Duration {
 			duration = b.backoff.Cap
 		}
 	}
-	
+
 	// Apply jitter (simplified: deterministic for testing)
 	// In production, use proper randomization
 	if b.backoff.Jitter > 0 {
 		jitterAmount := time.Duration(float64(duration) * b.backoff.Jitter)
 		// For deterministic testing, use half jitter
 		// In real usage, this would be random between 0 and jitterAmount
-		duration = duration + jitterAmount/2
+		duration += jitterAmount / 2
 	}
-	
+
 	b.step++
 	return duration
 }
@@ -111,4 +111,3 @@ func (b *Backoff) Step() int {
 func (b *Backoff) IsExhausted() bool {
 	return b.step >= b.backoff.Steps
 }
-

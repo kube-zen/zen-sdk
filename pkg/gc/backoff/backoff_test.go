@@ -144,4 +144,3 @@ func TestBackoff_Cap(t *testing.T) {
 		}
 	}
 }
-

@@ -177,7 +177,7 @@ func Setup(opts Options) func(*ctrl.Options) {
 }
 
 // ManagerOptions returns ctrl.Options with leader election configured (legacy API)
-func ManagerOptions(baseOpts ctrl.Options, leaderOpts Options) ctrl.Options {
+func ManagerOptions(baseOpts *ctrl.Options, leaderOpts Options) ctrl.Options {
 	setupFunc := Setup(leaderOpts)
 	setupFunc(&baseOpts)
 	return baseOpts
