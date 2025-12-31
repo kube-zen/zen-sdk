@@ -25,16 +25,25 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-// ApplyRequiredLeaderElection configures leader election for controller-runtime Manager.
-// This function ALWAYS enables leader election (no toggle) and sets required options.
+// ApplyLeaderElection configures leader election for controller-runtime Manager.
+// Leader election is enabled by default but can be disabled via the enable parameter.
+// All controllers use this function for consistency. zen-lead always passes enable=true (mandatory HA).
+// Other controllers expose a flag/env var that defaults to true but can be set to false
+// if the user doesn't want HA or wants zen-lead to handle HA instead.
 //
 // Parameters:
 //   - opts: Pointer to ctrl.Options to modify
-//   - component: Component name (e.g., "zen-lead-controller")
-//   - namespace: Namespace for leader election Lease (required)
+//   - component: Component name (e.g., "zen-flow-controller", "zen-gc-controller")
+//   - namespace: Namespace for leader election Lease (required if enabled)
 //   - idOverride: Optional override for leader election ID. If empty, uses component-based ID.
-func ApplyRequiredLeaderElection(opts *ctrl.Options, component string, namespace string, idOverride string) {
-	// Always enable leader election (mandatory for HA safety)
+//   - enable: Whether to enable leader election (default: true for all controllers except zen-lead which is always true)
+func ApplyLeaderElection(opts *ctrl.Options, component string, namespace string, idOverride string, enable bool) {
+	if !enable {
+		opts.LeaderElection = false
+		return
+	}
+
+	// Enable leader election
 	opts.LeaderElection = true
 
 	// Set leader election ID
@@ -44,11 +53,18 @@ func ApplyRequiredLeaderElection(opts *ctrl.Options, component string, namespace
 		opts.LeaderElectionID = fmt.Sprintf("%s-leader-election", component)
 	}
 
-	// Set namespace (required)
+	// Set namespace (required when enabled)
 	opts.LeaderElectionNamespace = namespace
 
 	// Set ReleaseOnCancel to ensure clean shutdown
 	opts.LeaderElectionReleaseOnCancel = true
+}
+
+// ApplyRequiredLeaderElection is a convenience wrapper for ApplyLeaderElection that always enables leader election.
+// Use this for zen-lead which requires mandatory HA (no option to disable).
+// This is equivalent to calling ApplyLeaderElection with enable=true.
+func ApplyRequiredLeaderElection(opts *ctrl.Options, component string, namespace string, idOverride string) {
+	ApplyLeaderElection(opts, component, namespace, idOverride, true)
 }
 
 // RequirePodNamespace returns the pod namespace from environment or service account file.
