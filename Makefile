@@ -66,3 +66,9 @@ all: lint test
 
 .DEFAULT_GOAL := help
 
+
+check:
+	@scripts/ci/check.sh
+
+test-race:
+	@go test -v -race -timeout=15m ./...

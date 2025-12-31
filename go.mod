@@ -7,6 +7,7 @@ require (
 	github.com/kube-zen/zen-flow v0.0.0-20251230223657-6c6c1671c456
 	github.com/prometheus/client_golang v1.19.1
 	go.uber.org/zap v1.27.0
+	golang.org/x/time v0.3.0
 	k8s.io/api v0.31.0
 	k8s.io/apimachinery v0.31.0
 	k8s.io/client-go v0.31.0
@@ -52,7 +53,6 @@ require (
 	golang.org/x/sys v0.23.0 // indirect
 	golang.org/x/term v0.23.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
-	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
