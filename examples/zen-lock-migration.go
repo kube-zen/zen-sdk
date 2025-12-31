@@ -28,7 +28,7 @@ import (
 	"github.com/kube-zen/zen-sdk/pkg/leader"
 	"github.com/kube-zen/zen-sdk/pkg/logging"
 	"github.com/kube-zen/zen-sdk/pkg/metrics"
-	"github.com/kube-zen/zen-sdk/pkg/webhook" as sdkwebhook
+	sdkwebhook "github.com/kube-zen/zen-sdk/pkg/webhook"
 )
 
 var (
