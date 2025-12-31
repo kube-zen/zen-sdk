@@ -52,8 +52,10 @@ func NewRecorder(componentName string) *Recorder {
 	// Register standard Prometheus collectors (only once)
 	collectorsMu.Lock()
 	if !collectorsRegistered {
-		_ = metrics.Registry.Register(collectors.NewGoCollector())
-		_ = metrics.Registry.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+		//nolint:errcheck // Intentionally ignore registration errors
+		metrics.Registry.Register(collectors.NewGoCollector())
+		//nolint:errcheck // Intentionally ignore registration errors
+		metrics.Registry.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 		collectorsRegistered = true
 	}
 	collectorsMu.Unlock()
@@ -96,9 +98,12 @@ func NewRecorder(componentName string) *Recorder {
 	)
 	
 	// Register metrics (ignore errors if already registered)
-	_ = metrics.Registry.Register(recorder.reconciliationsTotal)
-	_ = metrics.Registry.Register(recorder.reconciliationsDuration)
-	_ = metrics.Registry.Register(recorder.errorsTotal)
+	//nolint:errcheck // Intentionally ignore registration errors
+	metrics.Registry.Register(recorder.reconciliationsTotal)
+	//nolint:errcheck // Intentionally ignore registration errors
+	metrics.Registry.Register(recorder.reconciliationsDuration)
+	//nolint:errcheck // Intentionally ignore registration errors
+	metrics.Registry.Register(recorder.errorsTotal)
 	
 	return recorder
 }
