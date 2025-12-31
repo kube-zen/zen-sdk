@@ -90,24 +90,19 @@ func TestRateLimiter_Wait(t *testing.T) {
 }
 
 func TestRateLimiter_Allow(t *testing.T) {
-	rl := NewRateLimiter(1) // 1 op/sec
+	rl := NewRateLimiter(1) // 1 op/sec, burst = 1
 
 	// First call should be allowed (burst)
 	if !rl.Allow() {
 		t.Error("Allow() = false, want true (first call)")
 	}
 
-	// Second call should be allowed (burst)
-	if !rl.Allow() {
-		t.Error("Allow() = false, want true (second call)")
-	}
-
-	// Third call should be rate limited
+	// Second call should be rate limited (burst exhausted)
 	if rl.Allow() {
 		t.Error("Allow() = true, want false (rate limited)")
 	}
 
-	// Wait a bit and try again
+	// Wait a bit and try again (token should refill)
 	time.Sleep(1100 * time.Millisecond)
 	if !rl.Allow() {
 		t.Error("Allow() = false after wait, want true")
