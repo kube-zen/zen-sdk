@@ -134,24 +134,29 @@ The following patterns are **FORBIDDEN** and MUST NOT be used:
 
 ---
 
-## CI Denylist (H078: Runtime-only Enforcement)
+## CI Denylist (H089: Runtime-only Enforcement - Model A)
 
-All repositories MUST enforce the following denylist in CI using **runtime-only** enforcement scope.
+All repositories MUST enforce the following denylist in CI using **runtime-only** enforcement scope (Model A).
+
+### Enforcement Model: Runtime-Only (Model A)
+
+**Model A** (recommended and implemented): Scan only runtime code paths, explicitly exclude documentation, changelogs, and legacy/deprecated packages.
 
 ### Enforcement Scope
 
 **Included** (scanned for violations):
 - `/cmd` - Application entry points
-- `/pkg` - Public packages
+- `/pkg` - Public packages (excluding legacy/deprecated packages)
 - `/internal` - Internal packages
 - `/charts/templates` - Helm chart templates
 
 **Excluded** (not scanned):
-- `/docs` - Documentation files
-- `*.md` - All markdown files (may reference banned patterns for explanation)
+- `/docs` - Documentation files (may reference banned patterns for explanation)
+- `*.md` - All markdown files (including contract docs, changelogs, READMEs)
 - `/test`, `/tests`, `/e2e` - Test files (may reference banned patterns for testing)
 - `CHANGELOG.md` - Release notes
 - Deprecated code marked with `DEPRECATED` comments
+- Legacy packages: `zen-sdk/pkg/controller` (deprecated guard.go - H090: will be removed)
 
 ### Rationale
 
