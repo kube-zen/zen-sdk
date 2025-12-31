@@ -32,15 +32,66 @@ for !b.IsExhausted() {
 }
 ```
 
+### ttl
+
+TTL (Time-To-Live) evaluation for resource expiration.
+
+```go
+import "github.com/kube-zen/zen-sdk/pkg/gc/ttl"
+
+// Fixed TTL: 1 hour after creation
+ttlSeconds := int64(3600)
+spec := &ttl.Spec{
+    SecondsAfterCreation: &ttlSeconds,
+}
+
+expired, err := ttl.IsExpired(resource, spec)
+if err == nil && expired {
+    // Delete the resource
+}
+```
+
+### fieldpath
+
+Field path evaluation for extracting values from resources.
+
+```go
+import "github.com/kube-zen/zen-sdk/pkg/gc/fieldpath"
+
+severity, found, _ := fieldpath.GetString(resource, "spec.severity")
+if found && severity == "critical" {
+    // Handle critical resource
+}
+```
+
+### selector
+
+Resource selector matching (labels, annotations, fields, phase).
+
+```go
+import "github.com/kube-zen/zen-sdk/pkg/gc/selector"
+
+conditions := &selector.Conditions{
+    Phase: []string{"Failed", "Succeeded"},
+    HasLabels: []selector.LabelCondition{
+        {Key: "app", Value: "myapp"},
+    },
+}
+
+if selector.MatchesConditions(resource, conditions) {
+    // Resource matches all conditions
+}
+```
+
 ## Extraction Status
 
-- ✅ **ratelimiter**: Extracted (H112)
-- ✅ **backoff**: Extracted (H112)
-- ⏳ **fieldpath**: Planned
-- ⏳ **ttl**: Planned
-- ⏳ **selector**: Planned
+- ✅ **ratelimiter**: Extracted (H112 Phase 1)
+- ✅ **backoff**: Extracted (H112 Phase 1)
+- ✅ **ttl**: Extracted (H112 Phase 2)
+- ✅ **fieldpath**: Extracted (H112 Phase 2)
+- ✅ **selector**: Extracted (H112 Phase 2)
 
 ## Migration Guide
 
-See [GC Extraction Plan](../docs/GC_EXTRACTION_PLAN.md) for detailed migration steps.
+See [GC Extraction Plan](../../docs/GC_EXTRACTION_PLAN.md) for detailed migration steps.
 

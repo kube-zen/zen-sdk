@@ -102,6 +102,34 @@ patch := webhook.GeneratePatch(obj, updates)
 patch := webhook.GenerateAddPatch("/metadata/labels/test", "value")
 ```
 
+### `pkg/gc` - Garbage Collection Primitives
+
+Shared GC evaluation primitives extracted from zen-gc and zen-watcher.
+
+**Packages:**
+- `ratelimiter` - Token bucket rate limiting
+- `backoff` - Exponential backoff for retries
+- `ttl` - TTL (Time-To-Live) evaluation
+- `fieldpath` - Field path parsing and value extraction
+- `selector` - Resource selector matching (labels, annotations, fields)
+
+**Usage:**
+```go
+import (
+    "github.com/kube-zen/zen-sdk/pkg/gc/ttl"
+    "github.com/kube-zen/zen-sdk/pkg/gc/ratelimiter"
+)
+
+// TTL evaluation
+ttlSeconds := int64(3600)
+spec := &ttl.Spec{SecondsAfterCreation: &ttlSeconds}
+expired, _ := ttl.IsExpired(resource, spec)
+
+// Rate limiting
+rl := ratelimiter.NewRateLimiter(10) // 10 ops/sec
+rl.Wait(ctx)
+```
+
 ## Migration Guide
 
 See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for detailed migration instructions.
