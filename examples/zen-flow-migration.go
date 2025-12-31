@@ -1,3 +1,5 @@
+//go:build examples
+
 /*
 Example: Migrating zen-flow to use zen-sdk
 

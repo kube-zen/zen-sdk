@@ -1,3 +1,5 @@
+//go:build examples
+
 /*
 Example: Using zen-sdk/pkg/webhook in an admission webhook
 
