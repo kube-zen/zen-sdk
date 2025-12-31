@@ -63,10 +63,10 @@ func NewLogger(componentName string) *Logger {
 			},
 		},
 	}
-	
+
 	zapLogger := ctrlzap.New(ctrlzap.UseFlagOptions(&opts))
 	ctrl.SetLogger(zapLogger)
-	
+
 	// Create a new zap logger with component context
 	var baseLogger *zap.Logger
 	if isDevelopment() {
@@ -74,9 +74,9 @@ func NewLogger(componentName string) *Logger {
 	} else {
 		baseLogger, _ = zap.NewProduction() //nolint:errcheck // Fallback to nop logger on error
 	}
-	
+
 	componentLogger := baseLogger.With(zap.String("component", componentName))
-	
+
 	return &Logger{
 		Logger:        componentLogger,
 		componentName: componentName,
@@ -105,7 +105,7 @@ func (l *Logger) WithFields(fields map[string]interface{}) *Logger {
 	for k, v := range fields {
 		zapFields = append(zapFields, zap.Any(k, v))
 	}
-	
+
 	return &Logger{
 		Logger:        l.Logger.With(zapFields...),
 		componentName: l.componentName,
@@ -114,8 +114,7 @@ func (l *Logger) WithFields(fields map[string]interface{}) *Logger {
 
 // isDevelopment checks if we're in development mode
 func isDevelopment() bool {
-	return os.Getenv("LOG_LEVEL") == "debug" || 
-		   os.Getenv("DEVELOPMENT") == "true" ||
-		   os.Getenv("ENV") == "development"
+	return os.Getenv("LOG_LEVEL") == "debug" ||
+		os.Getenv("DEVELOPMENT") == "true" ||
+		os.Getenv("ENV") == "development"
 }
-

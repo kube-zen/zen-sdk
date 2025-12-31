@@ -104,7 +104,7 @@ func TestManagerOptions(t *testing.T) {
 		LeaseName: "test-lease",
 	}
 	
-	result := ManagerOptions(baseOpts, leaderOpts)
+	result := ManagerOptions(&baseOpts, leaderOpts)
 	
 	if !result.LeaderElection {
 		t.Error("Expected LeaderElection to be enabled")

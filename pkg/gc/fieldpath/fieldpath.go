@@ -90,4 +90,3 @@ func Exists(resource *unstructured.Unstructured, path string) bool {
 	_, found, err := unstructured.NestedFieldNoCopy(resource.Object, fieldPath...)
 	return err == nil && found
 }
-
