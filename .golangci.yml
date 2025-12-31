@@ -36,6 +36,8 @@ linters:
     - gocritic
 
 issues:
+  exclude-files:
+    - "examples/.*\\.go$"
   exclude-rules:
     - path: _test.go
       linters:
