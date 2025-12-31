@@ -27,14 +27,14 @@ import (
 // Recorder records metrics for Kubernetes controllers
 type Recorder struct {
 	componentName string
-	
+
 	// Reconciliation metrics
-	reconciliationsTotal *prometheus.CounterVec
+	reconciliationsTotal    *prometheus.CounterVec
 	reconciliationsDuration *prometheus.HistogramVec
-	
+
 	// Error metrics
 	errorsTotal *prometheus.CounterVec
-	
+
 	// Custom metrics can be added here
 }
 
@@ -48,16 +48,16 @@ func NewRecorder(componentName string) *Recorder {
 	recorder := &Recorder{
 		componentName: componentName,
 	}
-	
+
 	// Register standard Prometheus collectors (only once)
 	collectorsMu.Lock()
 	if !collectorsRegistered {
-		metrics.Registry.Register(collectors.NewGoCollector()) //nolint:errcheck // Intentionally ignore registration errors
+		metrics.Registry.Register(collectors.NewGoCollector())                                       //nolint:errcheck // Intentionally ignore registration errors
 		metrics.Registry.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{})) //nolint:errcheck // Intentionally ignore registration errors
 		collectorsRegistered = true
 	}
 	collectorsMu.Unlock()
-	
+
 	// Reconciliation counter
 	recorder.reconciliationsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -69,7 +69,7 @@ func NewRecorder(componentName string) *Recorder {
 		},
 		[]string{"result"}, // "success", "error"
 	)
-	
+
 	// Reconciliation duration histogram
 	recorder.reconciliationsDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -82,7 +82,7 @@ func NewRecorder(componentName string) *Recorder {
 		},
 		[]string{"result"},
 	)
-	
+
 	// Error counter
 	recorder.errorsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -94,12 +94,12 @@ func NewRecorder(componentName string) *Recorder {
 		},
 		[]string{"type"}, // "reconciliation", "webhook", etc.
 	)
-	
+
 	// Register metrics (ignore errors if already registered)
-	metrics.Registry.Register(recorder.reconciliationsTotal) //nolint:errcheck // Intentionally ignore registration errors
+	metrics.Registry.Register(recorder.reconciliationsTotal)    //nolint:errcheck // Intentionally ignore registration errors
 	metrics.Registry.Register(recorder.reconciliationsDuration) //nolint:errcheck // Intentionally ignore registration errors
-	metrics.Registry.Register(recorder.errorsTotal) //nolint:errcheck // Intentionally ignore registration errors
-	
+	metrics.Registry.Register(recorder.errorsTotal)             //nolint:errcheck // Intentionally ignore registration errors
+
 	return recorder
 }
 
@@ -124,4 +124,3 @@ func (r *Recorder) RecordReconciliationError(durationSeconds float64) {
 	r.RecordReconciliation("error", durationSeconds)
 	r.RecordError("reconciliation")
 }
-

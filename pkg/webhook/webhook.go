@@ -40,9 +40,9 @@ func GeneratePatch(obj runtime.Object, updates map[string]interface{}) ([]byte, 
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert object to unstructured: %w", err)
 	}
-	
+
 	patches := []Patch{}
-	
+
 	// Generate patches for each update
 	for path, value := range updates {
 		patches = append(patches, Patch{
@@ -51,13 +51,13 @@ func GeneratePatch(obj runtime.Object, updates map[string]interface{}) ([]byte, 
 			Value: value,
 		})
 	}
-	
+
 	// Marshal to JSON
 	patchBytes, err := json.Marshal(patches)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal patch: %w", err)
 	}
-	
+
 	return patchBytes, nil
 }
 
@@ -68,12 +68,12 @@ func GenerateAddPatch(path string, value interface{}) ([]byte, error) {
 		Path:  path,
 		Value: value,
 	}
-	
+
 	patchBytes, err := json.Marshal([]Patch{patch})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal patch: %w", err)
 	}
-	
+
 	return patchBytes, nil
 }
 
@@ -83,12 +83,12 @@ func GenerateRemovePatch(path string) ([]byte, error) {
 		Op:   "remove",
 		Path: path,
 	}
-	
+
 	patchBytes, err := json.Marshal([]Patch{patch})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal patch: %w", err)
 	}
-	
+
 	return patchBytes, nil
 }
 
@@ -98,14 +98,14 @@ func ValidateTLSSecret(secret *unstructured.Unstructured) error {
 	if !found || err != nil {
 		return fmt.Errorf("secret data not found or invalid: %w", err)
 	}
-	
+
 	requiredKeys := []string{"tls.crt", "tls.key"}
 	for _, key := range requiredKeys {
 		if _, exists := data[key]; !exists {
 			return fmt.Errorf("required TLS key '%s' not found in secret", key)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -115,20 +115,19 @@ func GetNamespacedName(obj runtime.Object) (types.NamespacedName, error) {
 	if err != nil {
 		return types.NamespacedName{}, fmt.Errorf("failed to convert object: %w", err)
 	}
-	
+
 	name, found, err := unstructured.NestedString(unstructuredObj, "metadata", "name")
 	if !found || err != nil {
 		return types.NamespacedName{}, fmt.Errorf("object name not found: %w", err)
 	}
-	
+
 	namespace, found, err := unstructured.NestedString(unstructuredObj, "metadata", "namespace")
 	if !found || err != nil {
 		namespace = "" // Namespace is optional
 	}
-	
+
 	return types.NamespacedName{
 		Namespace: namespace,
 		Name:      name,
 	}, nil
 }
-

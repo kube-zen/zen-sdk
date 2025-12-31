@@ -28,7 +28,7 @@ func TestGenerateAddPatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GenerateAddPatch() error = %v", err)
 	}
-	
+
 	if len(patch) == 0 {
 		t.Error("Expected patch to be generated")
 	}
@@ -39,7 +39,7 @@ func TestGenerateRemovePatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GenerateRemovePatch() error = %v", err)
 	}
-	
+
 	if len(patch) == 0 {
 		t.Error("Expected patch to be generated")
 	}
@@ -52,16 +52,16 @@ func TestGeneratePatch(t *testing.T) {
 			Namespace: "default",
 		},
 	}
-	
+
 	updates := map[string]interface{}{
 		"/metadata/labels/test": "value",
 	}
-	
+
 	patch, err := GeneratePatch(secret, updates)
 	if err != nil {
 		t.Fatalf("GeneratePatch() error = %v", err)
 	}
-	
+
 	if len(patch) == 0 {
 		t.Error("Expected patch to be generated")
 	}
@@ -74,16 +74,16 @@ func TestGetNamespacedName(t *testing.T) {
 			Namespace: "default",
 		},
 	}
-	
+
 	nn, err := GetNamespacedName(secret)
 	if err != nil {
 		t.Fatalf("GetNamespacedName() error = %v", err)
 	}
-	
+
 	if nn.Name != "test-secret" {
 		t.Errorf("Expected name 'test-secret', got '%s'", nn.Name)
 	}
-	
+
 	if nn.Namespace != "default" {
 		t.Errorf("Expected namespace 'default', got '%s'", nn.Namespace)
 	}
@@ -95,4 +95,3 @@ func TestValidateTLSSecret(t *testing.T) {
 	// For now, we skip this test as it requires more complex setup
 	t.Skip("ValidateTLSSecret requires unstructured conversion - test skipped")
 }
-

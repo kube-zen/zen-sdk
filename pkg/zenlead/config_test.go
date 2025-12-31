@@ -59,9 +59,9 @@ func TestPrepareManagerOptions_ZenLeadManaged(t *testing.T) {
 	}
 
 	leConfig := LeaderElectionConfig{
-		Mode:       ZenLeadManaged,
-		LeaseName:  "test-leader-group",
-		Namespace:  "test-namespace",
+		Mode:      ZenLeadManaged,
+		LeaseName: "test-leader-group",
+		Namespace: "test-namespace",
 	}
 
 	opts, err := PrepareManagerOptions(&base, &leConfig)
@@ -117,7 +117,7 @@ func TestPrepareManagerOptions_ValidationErrors(t *testing.T) {
 		{
 			name: "BuiltIn without Namespace",
 			config: LeaderElectionConfig{
-				Mode:      BuiltIn,
+				Mode:       BuiltIn,
 				ElectionID: "test",
 			},
 			wantErr: "Namespace is required",
@@ -133,7 +133,7 @@ func TestPrepareManagerOptions_ValidationErrors(t *testing.T) {
 		{
 			name: "ZenLeadManaged without Namespace",
 			config: LeaderElectionConfig{
-				Mode:     ZenLeadManaged,
+				Mode:      ZenLeadManaged,
 				LeaseName: "test",
 			},
 			wantErr: "Namespace is required",
@@ -161,7 +161,7 @@ func TestPrepareManagerOptions_ValidationErrors(t *testing.T) {
 }
 
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || 
+	return len(s) >= len(substr) && (s == substr ||
 		(len(s) > len(substr) && containsMiddle(s, substr)))
 }
 
@@ -210,34 +210,34 @@ func TestPrepareManagerOptions_TimingOverrides(t *testing.T) {
 
 func TestEnforceSafeHA(t *testing.T) {
 	tests := []struct {
-		name                string
-		replicaCount        int
+		name                  string
+		replicaCount          int
 		leaderElectionEnabled bool
-		wantErr             bool
+		wantErr               bool
 	}{
 		{
-			name:                "Safe: replicas=1, leader election disabled",
-			replicaCount:        1,
+			name:                  "Safe: replicas=1, leader election disabled",
+			replicaCount:          1,
 			leaderElectionEnabled: false,
-			wantErr:             false,
+			wantErr:               false,
 		},
 		{
-			name:                "Safe: replicas=2, leader election enabled",
-			replicaCount:        2,
+			name:                  "Safe: replicas=2, leader election enabled",
+			replicaCount:          2,
 			leaderElectionEnabled: true,
-			wantErr:             false,
+			wantErr:               false,
 		},
 		{
-			name:                "Unsafe: replicas=2, leader election disabled",
-			replicaCount:        2,
+			name:                  "Unsafe: replicas=2, leader election disabled",
+			replicaCount:          2,
 			leaderElectionEnabled: false,
-			wantErr:             true,
+			wantErr:               true,
 		},
 		{
-			name:                "Unsafe: replicas=3, leader election disabled",
-			replicaCount:        3,
+			name:                  "Unsafe: replicas=3, leader election disabled",
+			replicaCount:          3,
 			leaderElectionEnabled: false,
-			wantErr:             true,
+			wantErr:               true,
 		},
 	}
 
@@ -280,4 +280,3 @@ func TestDeriveElectionIDFromLeaseName(t *testing.T) {
 		})
 	}
 }
-

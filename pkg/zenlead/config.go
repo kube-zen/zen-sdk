@@ -201,4 +201,3 @@ func validateConfig(le *LeaderElectionConfig) error {
 func deriveElectionIDFromLeaseName(leaseName string) string {
 	return fmt.Sprintf("%s-lease", leaseName)
 }
-
