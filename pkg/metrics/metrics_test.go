@@ -23,11 +23,11 @@ import (
 
 func TestNewRecorder(t *testing.T) {
 	recorder := NewRecorder("test-component")
-	
+
 	if recorder == nil {
 		t.Fatal("Expected recorder to be created")
 	}
-	
+
 	if recorder.componentName != "test-component" {
 		t.Errorf("Expected component name 'test-component', got '%s'", recorder.componentName)
 	}
@@ -35,38 +35,37 @@ func TestNewRecorder(t *testing.T) {
 
 func TestRecordReconciliation(t *testing.T) {
 	recorder := NewRecorder("test-component")
-	
+
 	// Record successful reconciliation
 	recorder.RecordReconciliation("success", 0.5)
-	
+
 	// Record failed reconciliation
 	recorder.RecordReconciliation("error", 1.0)
 }
 
 func TestRecordReconciliationSuccess(t *testing.T) {
 	recorder := NewRecorder("test-component")
-	
+
 	start := time.Now()
 	time.Sleep(10 * time.Millisecond)
 	duration := time.Since(start).Seconds()
-	
+
 	recorder.RecordReconciliationSuccess(duration)
 }
 
 func TestRecordReconciliationError(t *testing.T) {
 	recorder := NewRecorder("test-component")
-	
+
 	start := time.Now()
 	time.Sleep(10 * time.Millisecond)
 	duration := time.Since(start).Seconds()
-	
+
 	recorder.RecordReconciliationError(duration)
 }
 
 func TestRecordError(t *testing.T) {
 	recorder := NewRecorder("test-component")
-	
+
 	recorder.RecordError("reconciliation")
 	recorder.RecordError("webhook")
 }
-
