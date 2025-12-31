@@ -102,8 +102,8 @@ func MatchesPhase(resource *unstructured.Unstructured, phases []string) bool {
 	if len(phases) == 0 {
 		return true
 	}
-	phase, found, _ := unstructured.NestedString(resource.Object, "status", "phase")
-	if !found {
+	phase, found, err := unstructured.NestedString(resource.Object, "status", "phase")
+	if err != nil || !found {
 		return false
 	}
 	for _, p := range phases {
@@ -118,8 +118,8 @@ func MatchesPhase(resource *unstructured.Unstructured, phases []string) bool {
 func MatchesField(resource *unstructured.Unstructured, condition FieldCondition) bool {
 	// Parse field path
 	fieldPath := parseFieldPath(condition.Path)
-	fieldValue, found, _ := unstructured.NestedString(resource.Object, fieldPath...)
-	if !found {
+	fieldValue, found, err := unstructured.NestedString(resource.Object, fieldPath...)
+	if err != nil || !found {
 		return false
 	}
 

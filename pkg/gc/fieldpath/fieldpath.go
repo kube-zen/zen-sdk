@@ -87,7 +87,7 @@ func Exists(resource *unstructured.Unstructured, path string) bool {
 	}
 
 	fieldPath := Parse(path)
-	_, found, _ := unstructured.NestedFieldNoCopy(resource.Object, fieldPath...)
-	return found
+	_, found, err := unstructured.NestedFieldNoCopy(resource.Object, fieldPath...)
+	return err == nil && found
 }
 
