@@ -70,9 +70,9 @@ func NewLogger(componentName string) *Logger {
 	// Create a new zap logger with component context
 	var baseLogger *zap.Logger
 	if isDevelopment() {
-		baseLogger, _ = zap.NewDevelopment()
+		baseLogger, _ = zap.NewDevelopment() //nolint:errcheck // Fallback to nop logger on error
 	} else {
-		baseLogger, _ = zap.NewProduction()
+		baseLogger, _ = zap.NewProduction() //nolint:errcheck // Fallback to nop logger on error
 	}
 	
 	componentLogger := baseLogger.With(zap.String("component", componentName))
