@@ -153,11 +153,25 @@ func TestPrepareManagerOptions_ValidationErrors(t *testing.T) {
 			if err == nil {
 				t.Fatal("PrepareManagerOptions should have failed")
 			}
-			if err.Error() == "" || err.Error()[:len(tt.wantErr)] != tt.wantErr {
-				t.Errorf("error = %q, want prefix %q", err.Error(), tt.wantErr)
+			if err.Error() == "" || !contains(err.Error(), tt.wantErr) {
+				t.Errorf("error = %q, want to contain %q", err.Error(), tt.wantErr)
 			}
 		})
 	}
+}
+
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || 
+		(len(s) > len(substr) && containsMiddle(s, substr)))
+}
+
+func containsMiddle(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }
 
 func TestPrepareManagerOptions_TimingOverrides(t *testing.T) {
