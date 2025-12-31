@@ -1,5 +1,24 @@
 # Leadership Contract
 
+**Version**: 1.0.0  
+**Last Updated**: 2025-01-15  
+**Stability**: Stable (v1.0.0+)
+
+## Change Process
+
+- **Major version bump**: Breaking changes to API or behavior
+- **Minor version bump**: New features, backward-compatible
+- **Patch version bump**: Bug fixes, documentation updates
+
+## Version History
+
+- **v1.0.0** (2025-01-15): Initial stable release
+  - Standardized leadership profiles (A, B, C)
+  - CI denylist enforcement
+  - Helm chart safety guards
+
+---
+
 This document defines the authoritative leadership model for all Kube-ZEN components. All components MUST follow one of three supported profiles.
 
 ## Leadership Profiles
@@ -115,16 +134,50 @@ The following patterns are **FORBIDDEN** and MUST NOT be used:
 
 ---
 
-## CI Denylist
+## CI Denylist (H078: Runtime-only Enforcement)
 
-All repositories MUST enforce the following denylist in CI:
+All repositories MUST enforce the following denylist in CI using **runtime-only** enforcement scope.
+
+### Enforcement Scope
+
+**Included** (scanned for violations):
+- `/cmd` - Application entry points
+- `/pkg` - Public packages
+- `/internal` - Internal packages
+- `/charts/templates` - Helm chart templates
+
+**Excluded** (not scanned):
+- `/docs` - Documentation files
+- `*.md` - All markdown files (may reference banned patterns for explanation)
+- `/test`, `/tests`, `/e2e` - Test files (may reference banned patterns for testing)
+- `CHANGELOG.md` - Release notes
+- Deprecated code marked with `DEPRECATED` comments
+
+### Rationale
+
+Runtime-only enforcement ensures:
+1. **Actual code violations are caught** - Banned patterns in executable code are detected
+2. **Documentation remains flexible** - Docs can explain prohibited patterns without triggering false positives
+3. **Test code is exempt** - Tests may legitimately reference banned patterns to verify they're not used
+4. **Deprecated code is handled** - Legacy code marked as deprecated is excluded
+
+### Implementation
+
+The denylist CI check (`scripts/ci/validate-leadership-denylist.sh`) scans runtime code paths only:
 
 ```bash
-# Prohibited patterns (must return 0 matches)
-git grep -n "NewWatcher\|zen-lead/role\|ha-mode=external\|use zen-lead for controller HA" --include="*.go" --include="*.md" --include="*.yaml"
+# Prohibited patterns (must return 0 matches in runtime code)
+# Scanned paths: /cmd, /pkg, /internal, /charts/templates
+# Excluded: /docs, *.md, test files, deprecated code
 ```
 
-If any matches are found, CI MUST fail.
+**Banned patterns**:
+- `NewWatcher` - Pod annotation watcher pattern
+- `zen-lead/role` - Pod role annotation
+- `ha-mode=external` - External HA mode
+- `use zen-lead for controller HA` - Misuse of zen-lead for controller HA
+
+If any matches are found in runtime code, CI MUST fail.
 
 ---
 
