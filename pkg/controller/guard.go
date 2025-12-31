@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package controller provides controller utilities.
-// DEPRECATED: LeaderGuard is deprecated. Use controller-runtime's built-in leader election
+// Deprecated: LeaderGuard is deprecated. Use controller-runtime's built-in leader election
 // via zen-sdk/pkg/leader.ApplyRequiredLeaderElection() instead.
 // This package is kept for backward compatibility only and will be removed in a future version.
 package controller
@@ -35,7 +35,7 @@ import (
 
 const (
 	// AnnotationRole is deprecated. Do not use.
-	// DEPRECATED: zen-lead no longer mutates pods with leader annotations.
+	// Deprecated: zen-lead no longer mutates pods with leader annotations.
 	// Use controller-runtime's built-in leader election instead.
 	AnnotationRole = "zen-lead/role"
 	// RoleLeader is deprecated. Do not use.
@@ -43,7 +43,7 @@ const (
 )
 
 // LeaderGuard wraps a reconcile.Reconciler to prevent "Split Brain" scenarios.
-// DEPRECATED: This approach relies on pod annotations set by zen-lead, which is incompatible
+// Deprecated: This approach relies on pod annotations set by zen-lead, which is incompatible
 // with zen-lead's Day-0 "no pod mutation" contract. Use controller-runtime's built-in leader
 // election via zen-sdk/pkg/leader.ApplyRequiredLeaderElection() instead.
 //
@@ -60,7 +60,7 @@ type LeaderGuard struct {
 }
 
 // NewLeaderGuard creates a new LeaderGuard instance.
-// DEPRECATED: Use controller-runtime's built-in leader election instead.
+// Deprecated: Use controller-runtime's built-in leader election instead.
 // It reads POD_NAME and POD_NAMESPACE from environment variables.
 // If POD_NAME is empty (e.g., running outside a pod), it defaults to
 // assuming leader status (returns true for IsLeader checks).
@@ -87,7 +87,7 @@ func NewLeaderGuard(client client.Client, logger logr.Logger) *LeaderGuard {
 }
 
 // Wrap wraps a reconcile.Reconciler with leader guard logic.
-// DEPRECATED: Use controller-runtime's built-in leader election instead.
+// Deprecated: Use controller-runtime's built-in leader election instead.
 // Only the leader pod processes reconciliation events; all
 // followers requeue and wait.
 func (lg *LeaderGuard) Wrap(inner reconcile.Reconciler) reconcile.Reconciler {
@@ -134,11 +134,11 @@ func (lg *LeaderGuard) Wrap(inner reconcile.Reconciler) reconcile.Reconciler {
 			return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
 		}
 
-		// Check zen-lead/role annotation (DEPRECATED: zen-lead no longer sets this)
+		// Check zen-lead/role annotation (Deprecated: zen-lead no longer sets this)
 		role, exists := pod.Annotations[AnnotationRole]
 		if !exists {
 			// No annotation means not participating in leader election (or zen-lead not running)
-			lg.log.V(4).Info("No zen-lead/role annotation found, assuming follower (DEPRECATED: use controller-runtime leader election)",
+			lg.log.V(4).Info("No zen-lead/role annotation found, assuming follower (Deprecated: use controller-runtime leader election)",
 				"pod", lg.podName,
 			)
 			return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
@@ -147,14 +147,14 @@ func (lg *LeaderGuard) Wrap(inner reconcile.Reconciler) reconcile.Reconciler {
 		if role == RoleLeader {
 			// We are the leader! Update cache and execute inner reconciler
 			lg.isLeaderCache = true
-			lg.log.Info("Elected as leader, processing reconciliation (DEPRECATED: use controller-runtime leader election)",
+			lg.log.Info("Elected as leader, processing reconciliation (Deprecated: use controller-runtime leader election)",
 				"pod", lg.podName,
 			)
 			return inner.Reconcile(ctx, req)
 		}
 
 		// We are a follower, log and requeue
-		lg.log.V(4).Info("Not leader, requeuing (DEPRECATED: use controller-runtime leader election)",
+		lg.log.V(4).Info("Not leader, requeuing (Deprecated: use controller-runtime leader election)",
 			"pod", lg.podName,
 			"role", role,
 		)
