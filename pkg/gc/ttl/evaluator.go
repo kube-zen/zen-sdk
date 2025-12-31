@@ -70,15 +70,15 @@ func CalculateExpirationTime(resource *unstructured.Unstructured, spec *Spec) (t
 		fieldPath := parseFieldPath(spec.FieldPath)
 
 		// Try to get as int64 first
-		value, found, _, err := unstructured.NestedInt64(resource.Object, fieldPath...)
-		if found {
+		value, found, err := unstructured.NestedInt64(resource.Object, fieldPath...)
+		if err == nil && found {
 			creationTime := resource.GetCreationTimestamp().Time
 			return creationTime.Add(time.Duration(value) * time.Second), nil
 		}
 
 		// Try as string for mappings
-		strValue, found, _, err := unstructured.NestedString(resource.Object, fieldPath...)
-		if found {
+		strValue, found, err := unstructured.NestedString(resource.Object, fieldPath...)
+		if err == nil && found {
 			// Option 3: Mapped TTL
 			if len(spec.Mappings) > 0 {
 				var ttl int64
@@ -104,7 +104,7 @@ func CalculateExpirationTime(resource *unstructured.Unstructured, spec *Spec) (t
 	// Option 4: Relative TTL (relative to another timestamp field)
 	if spec.RelativeTo != "" && spec.SecondsAfter != nil {
 		fieldPath := parseFieldPath(spec.RelativeTo)
-		timestampStr, found, _, err := unstructured.NestedString(resource.Object, fieldPath...)
+		timestampStr, found, err := unstructured.NestedString(resource.Object, fieldPath...)
 		if err != nil || !found {
 			return time.Time{}, fmt.Errorf("%w: %s", ErrRelativeTimestampFieldNotFound, spec.RelativeTo)
 		}
