@@ -142,4 +142,3 @@ func TestRateLimiter_ContextCancel(t *testing.T) {
 		t.Error("Wait() with canceled context = nil, want error")
 	}
 }
-

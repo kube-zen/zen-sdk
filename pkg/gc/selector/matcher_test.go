@@ -225,4 +225,3 @@ func TestMatchesLabelSelector_NotMatch(t *testing.T) {
 		t.Error("expected label selector to not match")
 	}
 }
-

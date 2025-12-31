@@ -34,7 +34,7 @@ func TestPrepareManagerOptions_BuiltIn(t *testing.T) {
 		Namespace:  "test-namespace",
 	}
 
-	opts, err := PrepareManagerOptions(&base, leConfig)
+	opts, err := PrepareManagerOptions(&base, &leConfig)
 	if err != nil {
 		t.Fatalf("PrepareManagerOptions failed: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestPrepareManagerOptions_ZenLeadManaged(t *testing.T) {
 		Namespace:  "test-namespace",
 	}
 
-	opts, err := PrepareManagerOptions(&base, leConfig)
+	opts, err := PrepareManagerOptions(&base, &leConfig)
 	if err != nil {
 		t.Fatalf("PrepareManagerOptions failed: %v", err)
 	}
@@ -90,7 +90,7 @@ func TestPrepareManagerOptions_Disabled(t *testing.T) {
 		Mode: Disabled,
 	}
 
-	opts, err := PrepareManagerOptions(&base, leConfig)
+	opts, err := PrepareManagerOptions(&base, &leConfig)
 	if err != nil {
 		t.Fatalf("PrepareManagerOptions failed: %v", err)
 	}
@@ -149,7 +149,7 @@ func TestPrepareManagerOptions_ValidationErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := PrepareManagerOptions(&ctrl.Options{}, tt.config)
+			_, err := PrepareManagerOptions(&ctrl.Options{}, &tt.config)
 			if err == nil {
 				t.Fatal("PrepareManagerOptions should have failed")
 			}
@@ -192,7 +192,7 @@ func TestPrepareManagerOptions_TimingOverrides(t *testing.T) {
 		RetryPeriod:   &retryPeriod,
 	}
 
-	opts, err := PrepareManagerOptions(&base, leConfig)
+	opts, err := PrepareManagerOptions(&base, &leConfig)
 	if err != nil {
 		t.Fatalf("PrepareManagerOptions failed: %v", err)
 	}

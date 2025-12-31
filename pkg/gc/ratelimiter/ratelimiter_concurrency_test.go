@@ -205,4 +205,3 @@ func TestRateLimiter_MaxBackoffClamp(t *testing.T) {
 		t.Errorf("Expected default rate %d, got %v", DefaultMaxPerSecond, rl3.GetRate())
 	}
 }
-

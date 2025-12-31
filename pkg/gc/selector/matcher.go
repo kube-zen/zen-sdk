@@ -218,4 +218,3 @@ func parseFieldPath(path string) []string {
 	}
 	return result
 }
-

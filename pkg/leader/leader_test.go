@@ -25,23 +25,23 @@ import (
 
 func TestDefaultOptions(t *testing.T) {
 	opts := DefaultOptions("test-lease")
-	
+
 	if opts.LeaseName != "test-lease" {
 		t.Errorf("Expected LeaseName 'test-lease', got '%s'", opts.LeaseName)
 	}
-	
+
 	if opts.Enable {
 		t.Error("Expected Enable to be false by default")
 	}
-	
+
 	if opts.LeaseDuration != 15*time.Second {
 		t.Errorf("Expected LeaseDuration 15s, got %v", opts.LeaseDuration)
 	}
-	
+
 	if opts.RenewDeadline != 10*time.Second {
 		t.Errorf("Expected RenewDeadline 10s, got %v", opts.RenewDeadline)
 	}
-	
+
 	if opts.RetryPeriod != 2*time.Second {
 		t.Errorf("Expected RetryPeriod 2s, got %v", opts.RetryPeriod)
 	}
@@ -51,11 +51,11 @@ func TestSetup_Disabled(t *testing.T) {
 	opts := Options{
 		Enable: false,
 	}
-	
+
 	managerOpts := ctrl.Options{}
 	setupFunc := Setup(opts)
 	setupFunc(&managerOpts)
-	
+
 	if managerOpts.LeaderElection {
 		t.Error("Expected LeaderElection to be false when disabled")
 	}
@@ -63,30 +63,30 @@ func TestSetup_Disabled(t *testing.T) {
 
 func TestSetup_Enabled(t *testing.T) {
 	opts := Options{
-		Enable:     true,
-		LeaseName:  "test-lease",
-		Namespace:  "test-ns",
+		Enable:        true,
+		LeaseName:     "test-lease",
+		Namespace:     "test-ns",
 		LeaseDuration: 20 * time.Second,
 		RenewDeadline: 15 * time.Second,
-		RetryPeriod: 3 * time.Second,
+		RetryPeriod:   3 * time.Second,
 	}
-	
+
 	managerOpts := ctrl.Options{}
 	setupFunc := Setup(opts)
 	setupFunc(&managerOpts)
-	
+
 	if !managerOpts.LeaderElection {
 		t.Error("Expected LeaderElection to be true when enabled")
 	}
-	
+
 	if managerOpts.LeaderElectionID != "test-lease" {
 		t.Errorf("Expected LeaderElectionID 'test-lease', got '%s'", managerOpts.LeaderElectionID)
 	}
-	
+
 	if managerOpts.LeaderElectionNamespace != "test-ns" {
 		t.Errorf("Expected LeaderElectionNamespace 'test-ns', got '%s'", managerOpts.LeaderElectionNamespace)
 	}
-	
+
 	if managerOpts.LeaseDuration == nil {
 		t.Error("Expected LeaseDuration to be set")
 	} else if *managerOpts.LeaseDuration != 20*time.Second {
@@ -98,20 +98,19 @@ func TestManagerOptions(t *testing.T) {
 	baseOpts := ctrl.Options{
 		Scheme: nil,
 	}
-	
+
 	leaderOpts := Options{
 		Enable:    true,
 		LeaseName: "test-lease",
 	}
-	
+
 	result := ManagerOptions(&baseOpts, leaderOpts)
-	
+
 	if !result.LeaderElection {
 		t.Error("Expected LeaderElection to be enabled")
 	}
-	
+
 	if result.LeaderElectionID != "test-lease" {
 		t.Errorf("Expected LeaderElectionID 'test-lease', got '%s'", result.LeaderElectionID)
 	}
 }
-

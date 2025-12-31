@@ -249,4 +249,3 @@ func TestCalculateExpirationTime_FieldPathNotFound(t *testing.T) {
 		t.Error("expected error for field path not found")
 	}
 }
-
