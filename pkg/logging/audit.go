@@ -220,4 +220,3 @@ func ConfigKeyField(key string) zap.Field {
 func DataTypeField(dataType string) zap.Field {
 	return zap.String("data_type", dataType)
 }
-

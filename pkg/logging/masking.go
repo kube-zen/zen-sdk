@@ -112,4 +112,3 @@ func RedactPassword(password string) string {
 func RedactSecret(secret string) string {
 	return "[REDACTED]"
 }
-

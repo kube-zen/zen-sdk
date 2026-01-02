@@ -28,12 +28,12 @@ import (
 type contextKey string
 
 const (
-	requestIDKey  contextKey = "request_id"
-	tenantIDKey   contextKey = "tenant_id"
-	clusterIDKey  contextKey = "cluster_id"
-	userIDKey     contextKey = "user_id"
-	traceIDKey    contextKey = "trace_id"
-	spanIDKey     contextKey = "span_id"
+	requestIDKey contextKey = "request_id"
+	tenantIDKey  contextKey = "tenant_id"
+	clusterIDKey contextKey = "cluster_id"
+	userIDKey    contextKey = "user_id"
+	traceIDKey   contextKey = "trace_id"
+	spanIDKey    contextKey = "span_id"
 )
 
 // WithRequestID adds request ID to context
@@ -130,7 +130,7 @@ func GetTraceID(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
-	
+
 	// Try OpenTelemetry trace context first (if available)
 	span := trace.SpanFromContext(ctx)
 	if span.IsRecording() {
@@ -139,7 +139,7 @@ func GetTraceID(ctx context.Context) string {
 			return spanCtx.TraceID().String()
 		}
 	}
-	
+
 	// Fallback to custom context key
 	if id, ok := ctx.Value(traceIDKey).(string); ok {
 		return id
@@ -152,7 +152,7 @@ func GetSpanID(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
-	
+
 	// Try OpenTelemetry span context first (if available)
 	span := trace.SpanFromContext(ctx)
 	if span.IsRecording() {
@@ -161,7 +161,7 @@ func GetSpanID(ctx context.Context) string {
 			return spanCtx.SpanID().String()
 		}
 	}
-	
+
 	// Fallback to custom context key
 	if id, ok := ctx.Value(spanIDKey).(string); ok {
 		return id
@@ -206,13 +206,13 @@ func GetInstanceID(ctx context.Context) string {
 // Supports W3C TraceContext (via OpenTelemetry) and custom headers
 func ExtractTraceContext(req *http.Request) context.Context {
 	ctx := req.Context()
-	
+
 	// Use OpenTelemetry propagator if available
 	prop := otel.GetTextMapPropagator()
 	if prop != nil {
 		ctx = prop.Extract(ctx, propagation.HeaderCarrier(req.Header))
 	}
-	
+
 	// Fallback to custom header extraction
 	if GetTraceID(ctx) == "" {
 		// Try W3C TraceContext header
@@ -230,7 +230,7 @@ func ExtractTraceContext(req *http.Request) context.Context {
 			}
 		}
 	}
-	
+
 	// Fallback to X-Trace-ID custom header
 	if GetTraceID(ctx) == "" {
 		traceID := req.Header.Get("X-Trace-ID")
@@ -238,7 +238,7 @@ func ExtractTraceContext(req *http.Request) context.Context {
 			ctx = WithTraceID(ctx, traceID)
 		}
 	}
-	
+
 	// Extract request ID
 	requestID := req.Header.Get("X-Request-ID")
 	if requestID != "" {
@@ -248,7 +248,7 @@ func ExtractTraceContext(req *http.Request) context.Context {
 			ctx = WithTraceID(ctx, requestID)
 		}
 	}
-	
+
 	return ctx
 }
 
@@ -258,13 +258,13 @@ func PropagateTraceHeaders(ctx context.Context, req *http.Request) {
 	if ctx == nil || req == nil {
 		return
 	}
-	
+
 	// Use OpenTelemetry propagator if available
 	prop := otel.GetTextMapPropagator()
 	if prop != nil {
 		prop.Inject(ctx, propagation.HeaderCarrier(req.Header))
 	}
-	
+
 	// Fallback to custom header propagation
 	traceID := GetTraceID(ctx)
 	if traceID != "" {
@@ -283,11 +283,10 @@ func PropagateTraceHeaders(ctx context.Context, req *http.Request) {
 			req.Header.Set("X-Trace-ID", traceID)
 		}
 	}
-	
+
 	// Propagate request ID
 	requestID := GetRequestID(ctx)
 	if requestID != "" && req.Header.Get("X-Request-ID") == "" {
 		req.Header.Set("X-Request-ID", requestID)
 	}
 }
-
