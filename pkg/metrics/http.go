@@ -59,7 +59,7 @@ type HTTPMetricsConfig struct {
 }
 
 // NewHTTPMetrics creates HTTP metrics with the given configuration
-func NewHTTPMetrics(config HTTPMetricsConfig) (*HTTPMetrics, error) {
+func NewHTTPMetrics(config HTTPMetricsConfig) (*HTTPMetrics, error) { //nolint:gocritic // hugeParam: config is intentionally passed by value for immutability
 	prefix := config.Prefix
 	if prefix == "" {
 		prefix = "zen_http"

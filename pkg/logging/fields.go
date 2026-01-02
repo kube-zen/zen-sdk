@@ -221,4 +221,3 @@ func DBDurationMs(ms int64) zap.Field {
 func Error(err error) zap.Field {
 	return zap.Error(err)
 }
-

@@ -61,12 +61,12 @@ const (
 
 // ErrorContext holds enhanced error context information
 type ErrorContext struct {
-	Category    ErrorCategory
-	Code        string
-	Message     string
-	Stack       string
-	WrappedErr  error
-	Fields      []zap.Field
+	Category   ErrorCategory
+	Code       string
+	Message    string
+	Stack      string
+	WrappedErr error
+	Fields     []zap.Field
 }
 
 // CategorizeError attempts to categorize an error based on its message and type
@@ -213,10 +213,10 @@ func (e *EnhancedErrorLogger) LogError(err error, msg string, errorCode string, 
 	}
 
 	ctx := ExtractErrorContext(err, 3) // Skip frames for LogError -> caller
-	allFields := append(fields,
+	allFields := append(fields, //nolint:gocritic // appendAssign: fields slice is intentionally not modified, we create a new slice
 		zap.Error(err),
 		ErrorCategoryField(ctx.Category),
-	) //nolint:gocritic // appendAssign: fields slice is intentionally not modified, we create a new slice
+	)
 
 	if errorCode != "" {
 		allFields = append(allFields, ErrorCode(errorCode))
@@ -335,4 +335,3 @@ func (ctx *ErrorContext) WithZapFields(fields ...zap.Field) *ErrorContext {
 	ctx.Fields = append(ctx.Fields, fields...)
 	return ctx
 }
-

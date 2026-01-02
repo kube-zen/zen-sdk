@@ -224,7 +224,7 @@ type observationFields struct {
 }
 
 // extractObservationFields extracts fields from observation for filtering
-func (f *Filter) extractObservationFields(observation *unstructured.Unstructured) observationFields {
+func (f *Filter) extractObservationFields(observation *unstructured.Unstructured) observationFields { //nolint:gocritic // hugeParam: fields return value is intentionally by value for immutability
 	severityVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "severity") //nolint:errcheck // Optional field, ignore errors
 	severity := strings.ToUpper(fmt.Sprintf("%v", severityVal))
 
@@ -576,7 +576,7 @@ func (f *Filter) extractSourceAndFilter(observation *unstructured.Unstructured, 
 }
 
 // applySourceFilters applies all source-specific filters
-func (f *Filter) applySourceFilters(sourceFilter *SourceFilter, fields observationFields, source string) (bool, string) {
+func (f *Filter) applySourceFilters(sourceFilter *SourceFilter, fields observationFields, source string) (bool, string) { //nolint:gocritic // hugeParam: fields is intentionally passed by value for immutability
 	if allowed, reason := f.checkSeverityFilter(sourceFilter, fields.severity, source); !allowed {
 		return false, reason
 	}

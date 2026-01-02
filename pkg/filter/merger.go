@@ -57,8 +57,9 @@ func MergeFilterConfigs(configs ...*FilterConfig) *FilterConfig {
 			continue
 		}
 
-		for sourceName, sourceFilter := range config.Sources {
+		for sourceName := range config.Sources {
 			sourceName = strings.ToLower(sourceName)
+			sourceFilter := config.Sources[sourceName] //nolint:gocritic // rangeValCopy: intentional copy for map assignment
 			existing, exists := result.Sources[sourceName]
 
 			if !exists {

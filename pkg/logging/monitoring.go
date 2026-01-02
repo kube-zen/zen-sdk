@@ -157,4 +157,3 @@ func AlertFlag(shouldAlert bool) zap.Field {
 func Severity(severity string) zap.Field {
 	return zap.String("severity", severity)
 }
-
