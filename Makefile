@@ -79,6 +79,18 @@ zenctl:
 	@go build -ldflags "$(GO_LDFLAGS)" -o zenctl ./cmd/zenctl
 	@echo "$(GREEN)✅ zenctl built$(NC)"
 
+## zenctl-nowork: Build zenctl CLI without workspace (workaround for Go version mismatch)
+zenctl-nowork:
+	@echo "$(GREEN)Building zenctl (workspace disabled)...$(NC)"
+	@GOWORK=off go build -ldflags "$(GO_LDFLAGS)" -o zenctl ./cmd/zenctl
+	@echo "$(GREEN)✅ zenctl built$(NC)"
+
+## test-zenctl-nowork: Test zenctl without workspace
+test-zenctl-nowork:
+	@echo "$(GREEN)Testing zenctl (workspace disabled)...$(NC)"
+	@GOWORK=off go test ./cmd/zenctl/internal/...
+	@echo "$(GREEN)✅ zenctl tests passed$(NC)"
+
 ## install-zenctl: Install zenctl to GOBIN
 install-zenctl:
 	@echo "$(GREEN)Installing zenctl...$(NC)"

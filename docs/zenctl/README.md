@@ -11,6 +11,14 @@ cd zen-sdk
 make zenctl
 ```
 
+**Note:** If your workspace Go version mismatches (e.g., `go.work` requires Go 1.25 but your system has Go 1.24), use:
+
+```bash
+make zenctl-nowork
+```
+
+This disables workspace mode (`GOWORK=off`) and builds zenctl independently.
+
 The binary will be built at `./zenctl` (or `./bin/zenctl` depending on Makefile configuration).
 
 ### Using Go install
