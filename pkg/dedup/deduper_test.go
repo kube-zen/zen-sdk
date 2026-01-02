@@ -22,6 +22,7 @@ import (
 func TestDeduper_ShouldCreate(t *testing.T) {
 	// Create deduper with 2 second window for testing
 	deduper := NewDeduper(2, 1000)
+	defer deduper.Stop()
 
 	key := DedupKey{
 		Source:      "test",
@@ -54,6 +55,7 @@ func TestDeduper_ShouldCreate(t *testing.T) {
 func TestDeduper_LRU(t *testing.T) {
 	// Create deduper with small max size
 	deduper := NewDeduper(60, 3)
+	defer deduper.Stop()
 
 	// Add 3 entries
 	key1 := DedupKey{Source: "test1", Namespace: "default", Kind: "Pod", Name: "pod1", Reason: "r1", MessageHash: "h1"}
@@ -127,6 +129,7 @@ func TestDedupKey_String(t *testing.T) {
 
 func TestDeduper_FingerprintBasedDedup(t *testing.T) {
 	deduper := NewDeduper(60, 1000)
+	defer deduper.Stop()
 
 	key1 := DedupKey{
 		Source:      "test",
@@ -167,6 +170,7 @@ func TestDeduper_FingerprintBasedDedup(t *testing.T) {
 func TestDeduper_RateLimiting(t *testing.T) {
 	// Create deduper with rate limiting enabled (via environment variable simulation)
 	deduper := NewDeduper(60, 1000)
+	defer deduper.Stop()
 
 	// Set rate limit via reflection or direct field access
 	// For this test, we'll assume rate limiting is configured via env vars
@@ -252,6 +256,7 @@ func TestGenerateFingerprint(t *testing.T) {
 func TestDeduper_TimeBuckets(t *testing.T) {
 	// Create deduper with 10 second window, buckets will be ~1 second
 	deduper := NewDeduper(10, 1000)
+	defer deduper.Stop()
 
 	key := DedupKey{
 		Source:      "test",
