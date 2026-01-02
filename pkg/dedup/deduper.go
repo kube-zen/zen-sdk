@@ -624,17 +624,26 @@ func (d *Deduper) cleanupLoop() {
 		case <-ticker.C:
 			d.mu.Lock()
 			now := time.Now()
-			d.cleanupOldBuckets(now)
-			d.cleanupOldFingerprints(now)
-			d.cleanupOldAggregations(now)
+			// Use Unlocked versions since we already hold the lock
+			d.cleanupOldBucketsUnlocked(now)
+			d.cleanupOldFingerprintsUnlocked(now)
+			d.cleanupOldAggregationsUnlocked(now)
 			d.mu.Unlock()
 		}
 	}
 }
 
 // Stop stops the deduper cleanup goroutine and waits for it to finish
+// This method is safe to call multiple times (idempotent)
 func (d *Deduper) Stop() {
-	close(d.stopCh)
+	// Use select to avoid closing an already-closed channel
+	select {
+	case <-d.stopCh:
+		// Channel already closed, cleanup already in progress or done
+		return
+	default:
+		close(d.stopCh)
+	}
 	d.wg.Wait()
 }
 
@@ -717,7 +726,7 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 			d.mu.Lock()
 			// Double-check after acquiring write lock
 			if ent, stillExists := d.cache[keyStr]; stillExists && now.Sub(ent.timestamp) < ttl {
-				d.updateLRU(keyStr)
+				d.updateLRUUnlocked(keyStr)
 				ent.timestamp = now
 				d.mu.Unlock()
 				return false // Duplicate in original cache
@@ -725,7 +734,7 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 			// Entry expired or removed, continue to add
 			if stillExists := d.cache[keyStr]; stillExists != nil {
 				delete(d.cache, keyStr)
-				d.removeFromLRU(keyStr)
+				d.removeFromLRUUnlocked(keyStr)
 			}
 			d.mu.Unlock()
 		} else {
@@ -733,7 +742,7 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 			d.mu.Lock()
 			if stillExists := d.cache[keyStr]; stillExists != nil {
 				delete(d.cache, keyStr)
-				d.removeFromLRU(keyStr)
+				d.removeFromLRUUnlocked(keyStr)
 			}
 			d.mu.Unlock()
 		}
