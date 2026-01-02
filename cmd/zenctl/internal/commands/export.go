@@ -13,6 +13,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/discovery/cached/disk"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 )
 
 func NewExportCommand() *cobra.Command {
@@ -92,17 +94,7 @@ Optionally generates kustomization.yaml for the output directory.`,
 			}
 
 			// Fetch resource
-			obj, err := dynClient.(interface {
-				Resource(gvr interface{}) interface {
-					Namespace(string) interface {
-						Get(ctx context.Context, name string, opts metav1.GetOptions) (*unstructured.Unstructured, error)
-					}
-				}
-			}).Resource(gvr).(interface {
-				Namespace(string) interface {
-					Get(ctx context.Context, name string, opts metav1.GetOptions) (*unstructured.Unstructured, error)
-				}
-			}).Namespace(namespace).Get(ctx, name, metav1.GetOptions{})
+			obj, err := dynClient.(dynamic.Interface).Resource(gvr).Namespace(namespace).Get(ctx, name, metav1.GetOptions{})
 			if err != nil {
 				return fmt.Errorf("failed to get %s: %w", resourceType, err)
 			}
