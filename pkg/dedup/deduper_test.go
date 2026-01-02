@@ -206,33 +206,40 @@ func TestDeduper_RateLimiting(t *testing.T) {
 }
 
 func TestGenerateFingerprint(t *testing.T) {
+	// GenerateFingerprint expects content with "spec" wrapper
 	content1 := map[string]interface{}{
-		"source":   "test",
-		"category": "security",
-		"severity": "HIGH",
-		"resource": map[string]interface{}{
-			"kind": "Pod",
-			"name": "test-pod",
+		"spec": map[string]interface{}{
+			"source":   "test",
+			"category": "security",
+			"severity": "HIGH",
+			"resource": map[string]interface{}{
+				"kind": "Pod",
+				"name": "test-pod",
+			},
 		},
 	}
 
 	content2 := map[string]interface{}{
-		"source":   "test",
-		"category": "security",
-		"severity": "HIGH",
-		"resource": map[string]interface{}{
-			"kind": "Pod",
-			"name": "test-pod",
+		"spec": map[string]interface{}{
+			"source":   "test",
+			"category": "security",
+			"severity": "HIGH",
+			"resource": map[string]interface{}{
+				"kind": "Pod",
+				"name": "test-pod",
+			},
 		},
 	}
 
 	content3 := map[string]interface{}{
-		"source":   "test",
-		"category": "security",
-		"severity": "LOW", // Different severity
-		"resource": map[string]interface{}{
-			"kind": "Pod",
-			"name": "test-pod",
+		"spec": map[string]interface{}{
+			"source":   "test",
+			"category": "security",
+			"severity": "LOW", // Different severity
+			"resource": map[string]interface{}{
+				"kind": "Pod",
+				"name": "test-pod",
+			},
 		},
 	}
 

@@ -112,8 +112,9 @@ type Deduper struct {
 	enableAggregation bool                        // whether aggregation is enabled
 
 	// Cleanup control
-	stopCh chan struct{}  // Stop channel for cleanup loop
-	wg     sync.WaitGroup // Wait group for cleanup goroutine
+	stopCh  chan struct{}      // Stop channel for cleanup loop
+	wg      sync.WaitGroup     // Wait group for cleanup goroutine
+	stopOnce sync.Once         // Ensure Stop() is only called once
 }
 
 // parseSourceWindows parses per-source windows from environment variable
@@ -376,11 +377,13 @@ func (d *Deduper) isDuplicateInBucket(keyStr, fingerprintHash string, now time.T
 		}
 	}
 
-	// Check by fingerprint
-	if lastSeen, exists := bucket.fingerprints[fingerprintHash]; exists {
-		bucketDuration := time.Duration(d.bucketSizeSeconds) * time.Second
-		if now.Sub(lastSeen) < bucketDuration {
-			return true
+	// Check by fingerprint (only if fingerprint is provided)
+	if fingerprintHash != "" {
+		if lastSeen, exists := bucket.fingerprints[fingerprintHash]; exists {
+			bucketDuration := time.Duration(d.bucketSizeSeconds) * time.Second
+			if now.Sub(lastSeen) < bucketDuration {
+				return true
+			}
 		}
 	}
 
@@ -411,7 +414,9 @@ func (d *Deduper) addToBucketUnlocked(keyStr, fingerprintHash string, now time.T
 	}
 
 	bucket.keys[keyStr] = now
-	bucket.fingerprints[fingerprintHash] = now
+	if fingerprintHash != "" {
+		bucket.fingerprints[fingerprintHash] = now
+	}
 }
 
 // isDuplicateFingerprintForSource checks if this fingerprint was seen recently for a specific source (must be called with lock held)
@@ -636,14 +641,9 @@ func (d *Deduper) cleanupLoop() {
 // Stop stops the deduper cleanup goroutine and waits for it to finish
 // This method is safe to call multiple times (idempotent)
 func (d *Deduper) Stop() {
-	// Use select to avoid closing an already-closed channel
-	select {
-	case <-d.stopCh:
-		// Channel already closed, cleanup already in progress or done
-		return
-	default:
+	d.stopOnce.Do(func() {
 		close(d.stopCh)
-	}
+	})
 	d.wg.Wait()
 }
 
@@ -695,7 +695,7 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 		if isDup {
 			// Update aggregation (needs write lock)
 			d.mu.Lock()
-			d.updateAggregation(fingerprintHash, now)
+			d.updateAggregationUnlocked(fingerprintHash, now)
 			d.mu.Unlock()
 			return false // Duplicate fingerprint
 		}
@@ -709,7 +709,7 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 		if fingerprintHash != "" {
 			// Update aggregation (needs write lock)
 			d.mu.Lock()
-			d.updateAggregation(fingerprintHash, now)
+			d.updateAggregationUnlocked(fingerprintHash, now)
 			d.mu.Unlock()
 		}
 		return false // Duplicate in bucket
@@ -751,12 +751,14 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 	}
 
 	// 5. Cleanup old buckets and fingerprints (periodic, needs write lock)
-	// Only cleanup occasionally to avoid lock contention
+	// Only cleanup occasionally to avoid lock contention (every 10th call or so)
+	// For now, cleanup on every call to ensure consistency, but this could be optimized
 	d.mu.Lock()
-	d.cleanupOldBucketsUnlocked(now)
-	d.cleanupOldFingerprintsUnlocked(now)
-	d.cleanupOldAggregationsUnlocked(now)
+	// Only cleanup expired entries for the current source to avoid removing unrelated entries
+	// Full cleanup of all sources happens in the background cleanup loop
 	d.cleanupExpiredForSourceUnlocked(source, now)
+	// Note: cleanupOldBucketsUnlocked, cleanupOldFingerprintsUnlocked, cleanupOldAggregationsUnlocked
+	// are called in the background cleanup loop to avoid lock contention
 
 	// 6. Add to all structures (write operations)
 	d.addToBucketUnlocked(keyStr, fingerprintHash, now)

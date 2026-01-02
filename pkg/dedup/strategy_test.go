@@ -203,11 +203,22 @@ func TestStrategyGetWindow(t *testing.T) {
 		t.Error("Fingerprint strategy should use default window")
 	}
 
-	// Event stream strategy should use shorter window
+	// Event stream strategy should use shorter window when default is >= 5 minutes
+	// If default is already shorter than 5 minutes, it uses the default
+	longDefaultWindow := 10 * time.Minute
 	esStrategy := &EventStreamStrategy{}
-	window := esStrategy.GetWindow(defaultWindow)
-	if window >= defaultWindow {
+	window := esStrategy.GetWindow(longDefaultWindow)
+	if window >= longDefaultWindow {
 		t.Errorf("Event stream strategy should use shorter window, got %v", window)
+	}
+	if window != 5*time.Minute {
+		t.Errorf("Event stream strategy should use 5 minute window, got %v", window)
+	}
+
+	// When default is shorter than 5 minutes, use default
+	shortWindow := esStrategy.GetWindow(defaultWindow)
+	if shortWindow != defaultWindow {
+		t.Errorf("Event stream strategy should use default when default < 5min, got %v", shortWindow)
 	}
 
 	// Key strategy should use default window
