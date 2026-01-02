@@ -112,9 +112,9 @@ type Deduper struct {
 	enableAggregation bool                        // whether aggregation is enabled
 
 	// Cleanup control
-	stopCh     chan struct{}  // Stop channel for cleanup loop
-	wg         sync.WaitGroup // Wait group for cleanup goroutine
-	stopOnce   sync.Once      // Ensure Stop() is only called once
+	stopCh      chan struct{}  // Stop channel for cleanup loop
+	wg          sync.WaitGroup // Wait group for cleanup goroutine
+	stopOnce    sync.Once      // Ensure Stop() is only called once
 	lastCleanup time.Time      // Last time cleanup was performed (for optimization)
 }
 
@@ -744,7 +744,7 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 	if fingerprintHash != "" {
 		cacheKey = fingerprintHash // Use fingerprint as cache key for fingerprint-based dedup
 	}
-	
+
 	// Skip cache check if fingerprint was expired and removed
 	if !fingerprintExpired {
 		d.mu.RLock()
@@ -795,14 +795,14 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 
 	// 6. Add to all structures (write operations) - acquire lock once for all operations
 	d.mu.Lock()
-	
+
 	// Perform cleanup if needed (while we already hold the lock)
 	if shouldCleanup {
 		// Only cleanup expired entries for the current source to avoid removing unrelated entries
 		d.cleanupExpiredForSourceUnlocked(source, now)
 		d.lastCleanup = now
 	}
-	
+
 	// Add to all structures
 	d.addToBucketUnlocked(keyStr, fingerprintHash, now)
 	if fingerprintHash != "" {
