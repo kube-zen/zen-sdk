@@ -112,9 +112,10 @@ type Deduper struct {
 	enableAggregation bool                        // whether aggregation is enabled
 
 	// Cleanup control
-	stopCh   chan struct{}  // Stop channel for cleanup loop
-	wg       sync.WaitGroup // Wait group for cleanup goroutine
-	stopOnce sync.Once      // Ensure Stop() is only called once
+	stopCh     chan struct{}  // Stop channel for cleanup loop
+	wg         sync.WaitGroup // Wait group for cleanup goroutine
+	stopOnce   sync.Once      // Ensure Stop() is only called once
+	lastCleanup time.Time      // Last time cleanup was performed (for optimization)
 }
 
 // parseSourceWindows parses per-source windows from environment variable
@@ -218,6 +219,7 @@ func NewDeduper(windowSeconds, maxSize int) *Deduper {
 		aggregatedEvents:     make(map[string]*aggregatedEvent),
 		enableAggregation:    enableAggregation,
 		stopCh:               make(chan struct{}),
+		lastCleanup:          time.Now(), // Initialize to current time
 	}
 
 	// Start background cleanup goroutine for enhanced features
@@ -760,14 +762,23 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 	}
 
 	// 5. Cleanup old buckets and fingerprints (periodic, needs write lock)
-	// Only cleanup occasionally to avoid lock contention (every 10th call or so)
-	// For now, cleanup on every call to ensure consistency, but this could be optimized
-	d.mu.Lock()
-	// Only cleanup expired entries for the current source to avoid removing unrelated entries
+	// Only cleanup occasionally to avoid lock contention (every 100th call or when >1s since last cleanup)
 	// Full cleanup of all sources happens in the background cleanup loop
-	d.cleanupExpiredForSourceUnlocked(source, now)
-	// Note: cleanupOldBucketsUnlocked, cleanupOldFingerprintsUnlocked, cleanupOldAggregationsUnlocked
-	// are called in the background cleanup loop to avoid lock contention
+	shouldCleanup := false
+	d.mu.RLock()
+	lastCleanup := d.lastCleanup
+	d.mu.RUnlock()
+	if now.Sub(lastCleanup) > time.Second {
+		shouldCleanup = true
+	}
+	
+	if shouldCleanup {
+		d.mu.Lock()
+		// Only cleanup expired entries for the current source to avoid removing unrelated entries
+		d.cleanupExpiredForSourceUnlocked(source, now)
+		d.lastCleanup = now
+		d.mu.Unlock()
+	}
 
 	// 6. Add to all structures (write operations)
 	d.addToBucketUnlocked(keyStr, fingerprintHash, now)
