@@ -78,6 +78,7 @@ func MergeFilterConfigs(configs ...*FilterConfig) *FilterConfig {
 }
 
 // mergeSourceFilters merges two SourceFilter objects
+//
 //nolint:gocritic // hugeParam: f1 and f2 are intentionally passed by pointer for performance
 func mergeSourceFilters(f1, f2 *SourceFilter) SourceFilter {
 	result := SourceFilter{}
