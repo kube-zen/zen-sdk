@@ -166,6 +166,69 @@ err := retry.Do(ctx, retry.DefaultConfig(), func() error {
 - Kubernetes error handling (timeout, conflict, etc.)
 - Generic support for functions with return values
 
+### `pkg/dedup` - Event Deduplication
+
+Event deduplication package for preventing duplicate observations within configurable time windows.
+
+**Usage:**
+```go
+import "github.com/kube-zen/zen-sdk/pkg/dedup"
+
+deduper := dedup.NewDeduper(60, 10000) // 60s window, 10k max entries
+
+key := dedup.DedupKey{
+    Source:      "falco",
+    Namespace:   "default",
+    Kind:        "Pod",
+    Name:        "test-pod",
+    Reason:      "FileAccess",
+    MessageHash: dedup.HashMessage("test message"),
+}
+
+if deduper.ShouldCreateWithContent(key, content) {
+    // Create observation
+}
+```
+
+**Features:**
+- Content-based fingerprinting (SHA-256)
+- Time-based buckets for efficient cleanup
+- Rate limiting per source (token bucket)
+- Event aggregation in rolling windows
+- Per-source deduplication windows
+- LRU eviction
+
+### `pkg/filter` - Event Filtering
+
+Event filtering package for source-level observation filtering with expression and list-based rules.
+
+**Usage:**
+```go
+import "github.com/kube-zen/zen-sdk/pkg/filter"
+
+config := &filter.FilterConfig{
+    Sources: map[string]filter.SourceFilter{
+        "falco": {
+            MinSeverity: "HIGH",
+            ExcludeNamespaces: []string{"kube-system"},
+        },
+    },
+}
+
+f := filter.NewFilter(config)
+if f.Allow(observation) {
+    // Process observation
+}
+```
+
+**Features:**
+- Expression-based filtering (SQL-like syntax)
+- List-based filtering (include/exclude rules)
+- Global namespace filtering
+- Per-source configuration
+- Dynamic configuration updates
+- Optional metrics interface
+
 ### `pkg/config` - Configuration Validation
 
 Environment variable validation and configuration helpers with batch validation support.
