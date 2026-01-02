@@ -526,9 +526,9 @@ func (f *Filter) checkRuleFilter(sourceFilter *SourceFilter, rule, source string
 	if len(sourceFilter.ExcludeRules) > 0 && rule != "" {
 		for _, excluded := range sourceFilter.ExcludeRules {
 			if strings.EqualFold(rule, excluded) {
-			if f.metrics != nil {
-				f.metrics.RecordFilterDecision(source, "filter", "exclude_rule")
-			}
+				if f.metrics != nil {
+					f.metrics.RecordFilterDecision(source, "filter", "exclude_rule")
+				}
 				filterLogger.Debug("Rule excluded, filtering out observation",
 					sdklog.Operation("filter_check"),
 					sdklog.String("source", source),

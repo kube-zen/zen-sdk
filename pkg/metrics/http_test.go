@@ -76,4 +76,3 @@ func TestNewHTTPMetricsWithDefaultRegistry(t *testing.T) {
 		t.Fatal("Expected HTTPMetrics to be created")
 	}
 }
-

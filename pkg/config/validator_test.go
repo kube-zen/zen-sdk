@@ -168,4 +168,3 @@ func TestValidator_Validate(t *testing.T) {
 	}
 	os.Unsetenv("TEST_REQUIRED")
 }
-

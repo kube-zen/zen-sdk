@@ -205,4 +205,3 @@ func TestWaitForShutdown_NoCleanup(t *testing.T) {
 	cancel()
 	wg.Wait()
 }
-

@@ -178,4 +178,3 @@ func TestDefaultConfig(t *testing.T) {
 		t.Error("Expected RetryableErrors function, got nil")
 	}
 }
-

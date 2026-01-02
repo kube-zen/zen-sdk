@@ -62,4 +62,3 @@ package logging
 //     // Do work
 //     return nil
 // })
-
