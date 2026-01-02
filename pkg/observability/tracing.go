@@ -41,25 +41,25 @@ var (
 
 // Config holds OpenTelemetry configuration
 type Config struct {
-	ServiceName      string  // Service name (required)
-	ServiceVersion   string  // Service version (optional, defaults to "dev")
-	Environment      string  // Deployment environment (optional)
-	SamplingRate     float64 // Sampling rate (0.0-1.0, default: 0.1 = 10%)
-	OTLPEndpoint     string  // OTLP endpoint (optional, uses env var or default)
-	ExporterType     string  // Exporter type: "otlp", "otlphttp", "stdout" (optional, uses env var)
-	Insecure         bool    // Use insecure connection for OTLP (default: true for development)
+	ServiceName    string  // Service name (required)
+	ServiceVersion string  // Service version (optional, defaults to "dev")
+	Environment    string  // Deployment environment (optional)
+	SamplingRate   float64 // Sampling rate (0.0-1.0, default: 0.1 = 10%)
+	OTLPEndpoint   string  // OTLP endpoint (optional, uses env var or default)
+	ExporterType   string  // Exporter type: "otlp", "otlphttp", "stdout" (optional, uses env var)
+	Insecure       bool    // Use insecure connection for OTLP (default: true for development)
 }
 
 // DefaultConfig returns a config with sensible defaults
 func DefaultConfig(serviceName string) Config {
 	return Config{
-		ServiceName:      serviceName,
-		ServiceVersion:   getVersion(),
-		Environment:      os.Getenv("DEPLOYMENT_ENV"),
-		SamplingRate:     0.1, // 10% sampling by default
-		ExporterType:     getExporterType(),
-		OTLPEndpoint:     getOTLPEndpoint(),
-		Insecure:         true, // Default to insecure for development
+		ServiceName:    serviceName,
+		ServiceVersion: getVersion(),
+		Environment:    os.Getenv("DEPLOYMENT_ENV"),
+		SamplingRate:   0.1, // 10% sampling by default
+		ExporterType:   getExporterType(),
+		OTLPEndpoint:   getOTLPEndpoint(),
+		Insecure:       true, // Default to insecure for development
 	}
 }
 
@@ -72,6 +72,7 @@ func DefaultConfig(serviceName string) Config {
 //
 // Returns a shutdown function that should be called during application shutdown,
 // and an error if initialization fails.
+//
 //nolint:gocritic // hugeParam: config is intentionally passed by value for immutability
 func Init(ctx context.Context, config Config) (func(context.Context) error, error) {
 	if initialized {
@@ -297,4 +298,3 @@ func getVersion() string {
 	}
 	return version
 }
-

@@ -155,4 +155,3 @@ func WaitForShutdown(ctx context.Context, component string, cleanup func()) {
 	logger.Info("Shutdown complete",
 		logging.Operation("shutdown_complete"))
 }
-

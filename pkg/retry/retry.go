@@ -181,4 +181,3 @@ func DoWithResult[T any](ctx context.Context, config Config, fn func() (T, error
 func IsRetryableError(err error) bool {
 	return DefaultConfig().RetryableErrors(err)
 }
-

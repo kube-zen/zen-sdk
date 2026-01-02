@@ -238,4 +238,3 @@ func ThroughputBytesPerSecond(throughput float64) zap.Field {
 func ConcurrentOperations(count int) zap.Field {
 	return Int("concurrent_operations", count)
 }
-

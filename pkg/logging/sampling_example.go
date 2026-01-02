@@ -51,4 +51,3 @@ package logging
 //     WindowSize:       time.Second,
 //     CleanupInterval:  30 * time.Second,
 // }
-

@@ -49,7 +49,7 @@ type SamplerConfig struct {
 // DefaultSamplerConfig returns a config with sensible defaults
 func DefaultSamplerConfig() SamplerConfig {
 	return SamplerConfig{
-		InfoSamplingRate:    0.1, // 10% of INFO logs
+		InfoSamplingRate:    0.1,  // 10% of INFO logs
 		DebugSamplingRate:   0.01, // 1% of DEBUG logs
 		SuccessSamplingRate: 0.01, // 1% of successful operations (2xx responses)
 		ErrorSamplingRate:   1.0,  // 100% of errors (log all errors)
@@ -59,11 +59,11 @@ func DefaultSamplerConfig() SamplerConfig {
 
 // Sampler provides log sampling functionality
 type Sampler struct {
-	config      SamplerConfig
-	infoCounter uint64
-	debugCounter uint64
+	config         SamplerConfig
+	infoCounter    uint64
+	debugCounter   uint64
 	successCounter uint64
-	mu          sync.Mutex
+	mu             sync.Mutex
 }
 
 // NewSampler creates a new log sampler with the given configuration
@@ -161,9 +161,9 @@ type RateLimiterConfig struct {
 // DefaultRateLimiterConfig returns a config with sensible defaults
 func DefaultRateLimiterConfig() RateLimiterConfig {
 	return RateLimiterConfig{
-		MaxLogsPerSecond: 10,              // Allow 10 logs per second per key
-		WindowSize:       time.Second,      // 1 second window
-		CleanupInterval: time.Minute,       // Clean up every minute
+		MaxLogsPerSecond: 10,          // Allow 10 logs per second per key
+		WindowSize:       time.Second, // 1 second window
+		CleanupInterval:  time.Minute, // Clean up every minute
 	}
 }
 
@@ -298,4 +298,3 @@ func (sl *SampledLogger) Error(err error, msg string, key string, fields ...zap.
 	// Errors are not sampled (always logged if not rate limited)
 	sl.logger.Error(err, msg, fields...)
 }
-

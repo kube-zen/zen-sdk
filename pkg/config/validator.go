@@ -290,4 +290,3 @@ func (v *Validator) HasErrors() bool {
 func (v *Validator) Errors() []ValidationError {
 	return v.errors
 }
-

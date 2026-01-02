@@ -28,12 +28,15 @@ import (
 type contextKey string
 
 const (
-	requestIDKey contextKey = "request_id"
-	tenantIDKey  contextKey = "tenant_id"
-	clusterIDKey contextKey = "cluster_id"
-	userIDKey    contextKey = "user_id"
-	traceIDKey   contextKey = "trace_id"
-	spanIDKey    contextKey = "span_id"
+	requestIDKey  contextKey = "request_id"
+	tenantIDKey   contextKey = "tenant_id"
+	clusterIDKey  contextKey = "cluster_id"
+	userIDKey     contextKey = "user_id"
+	traceIDKey    contextKey = "trace_id"
+	spanIDKey     contextKey = "span_id"
+	resourceIDKey contextKey = "resource_id"
+	adapterIDKey  contextKey = "adapter_id"
+	instanceIDKey contextKey = "instance_id"
 )
 
 // WithRequestID adds request ID to context
@@ -68,17 +71,17 @@ func WithSpanID(ctx context.Context, spanID string) context.Context {
 
 // WithResourceID adds a generic resource ID to context (for multi-tenant systems)
 func WithResourceID(ctx context.Context, resourceID string) context.Context {
-	return context.WithValue(ctx, "resource_id", resourceID)
+	return context.WithValue(ctx, resourceIDKey, resourceID)
 }
 
 // WithAdapterID adds adapter ID to context (for cluster components like zen-ingester)
 func WithAdapterID(ctx context.Context, adapterID string) context.Context {
-	return context.WithValue(ctx, "adapter_id", adapterID)
+	return context.WithValue(ctx, adapterIDKey, adapterID)
 }
 
 // WithInstanceID adds instance ID to context (for cluster components like zen-ingester)
 func WithInstanceID(ctx context.Context, instanceID string) context.Context {
-	return context.WithValue(ctx, "instance_id", instanceID)
+	return context.WithValue(ctx, instanceIDKey, instanceID)
 }
 
 // GetRequestID retrieves request ID from context
@@ -174,7 +177,7 @@ func GetResourceID(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
-	if id, ok := ctx.Value("resource_id").(string); ok {
+	if id, ok := ctx.Value(resourceIDKey).(string); ok {
 		return id
 	}
 	return ""
@@ -185,7 +188,7 @@ func GetAdapterID(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
-	if id, ok := ctx.Value("adapter_id").(string); ok {
+	if id, ok := ctx.Value(adapterIDKey).(string); ok {
 		return id
 	}
 	return ""
@@ -196,7 +199,7 @@ func GetInstanceID(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
-	if id, ok := ctx.Value("instance_id").(string); ok {
+	if id, ok := ctx.Value(instanceIDKey).(string); ok {
 		return id
 	}
 	return ""
