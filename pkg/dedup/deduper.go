@@ -694,6 +694,7 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 
 	// 2. Generate fingerprint if content is provided (no lock needed)
 	fingerprintHash := ""
+	fingerprintExpired := false // Track if fingerprint was expired and removed
 	if content != nil {
 		fingerprintHash = GenerateFingerprint(content)
 
@@ -716,9 +717,7 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 		d.mu.RUnlock()
 		if !fpExists {
 			// Fingerprint was expired and removed, cache entry was also removed
-			// Skip cache check and proceed to add new entry
-		} else {
-			// Fingerprint exists, continue with cache check below
+			fingerprintExpired = true
 		}
 	}
 
@@ -740,42 +739,47 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 
 	// 4. Check original cache-based dedup (read-only first)
 	// For fingerprint-based dedup, check cache by fingerprint; for key-based, check by key
+	// Skip cache check if fingerprint was expired (cache entry already removed)
 	cacheKey := keyStr
 	if fingerprintHash != "" {
 		cacheKey = fingerprintHash // Use fingerprint as cache key for fingerprint-based dedup
 	}
-	d.mu.RLock()
-	ent, exists := d.cache[cacheKey]
-	if exists {
-		isExpired := now.Sub(ent.timestamp) >= ttl
-		d.mu.RUnlock()
-		if !isExpired {
-			// Update LRU and timestamp (needs write lock)
-			d.mu.Lock()
-			// Double-check after acquiring write lock
-			if ent, stillExists := d.cache[cacheKey]; stillExists && now.Sub(ent.timestamp) < ttl {
-				d.updateLRUUnlocked(cacheKey)
-				ent.timestamp = now
+	
+	// Skip cache check if fingerprint was expired and removed
+	if !fingerprintExpired {
+		d.mu.RLock()
+		ent, exists := d.cache[cacheKey]
+		if exists {
+			isExpired := now.Sub(ent.timestamp) >= ttl
+			d.mu.RUnlock()
+			if !isExpired {
+				// Update LRU and timestamp (needs write lock)
+				d.mu.Lock()
+				// Double-check after acquiring write lock
+				if ent, stillExists := d.cache[cacheKey]; stillExists && now.Sub(ent.timestamp) < ttl {
+					d.updateLRUUnlocked(cacheKey)
+					ent.timestamp = now
+					d.mu.Unlock()
+					return false // Duplicate in original cache
+				}
+				// Entry expired or removed, continue to add
+				if stillExists := d.cache[cacheKey]; stillExists != nil {
+					delete(d.cache, cacheKey)
+					d.removeFromLRUUnlocked(cacheKey)
+				}
 				d.mu.Unlock()
-				return false // Duplicate in original cache
+			} else {
+				// Entry expired, remove it (needs write lock)
+				d.mu.Lock()
+				if stillExists := d.cache[cacheKey]; stillExists != nil {
+					delete(d.cache, cacheKey)
+					d.removeFromLRUUnlocked(cacheKey)
+				}
+				d.mu.Unlock()
 			}
-			// Entry expired or removed, continue to add
-			if stillExists := d.cache[cacheKey]; stillExists != nil {
-				delete(d.cache, cacheKey)
-				d.removeFromLRUUnlocked(cacheKey)
-			}
-			d.mu.Unlock()
 		} else {
-			// Entry expired, remove it (needs write lock)
-			d.mu.Lock()
-			if stillExists := d.cache[cacheKey]; stillExists != nil {
-				delete(d.cache, cacheKey)
-				d.removeFromLRUUnlocked(cacheKey)
-			}
-			d.mu.Unlock()
+			d.mu.RUnlock()
 		}
-	} else {
-		d.mu.RUnlock()
 	}
 
 	// 5. Cleanup old buckets and fingerprints (periodic, needs write lock)
