@@ -71,6 +71,16 @@ func WithResourceID(ctx context.Context, resourceID string) context.Context {
 	return context.WithValue(ctx, "resource_id", resourceID)
 }
 
+// WithAdapterID adds adapter ID to context (for cluster components like zen-ingester)
+func WithAdapterID(ctx context.Context, adapterID string) context.Context {
+	return context.WithValue(ctx, "adapter_id", adapterID)
+}
+
+// WithInstanceID adds instance ID to context (for cluster components like zen-ingester)
+func WithInstanceID(ctx context.Context, instanceID string) context.Context {
+	return context.WithValue(ctx, "instance_id", instanceID)
+}
+
 // GetRequestID retrieves request ID from context
 func GetRequestID(ctx context.Context) string {
 	if ctx == nil {
@@ -165,6 +175,28 @@ func GetResourceID(ctx context.Context) string {
 		return ""
 	}
 	if id, ok := ctx.Value("resource_id").(string); ok {
+		return id
+	}
+	return ""
+}
+
+// GetAdapterID retrieves adapter ID from context
+func GetAdapterID(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	if id, ok := ctx.Value("adapter_id").(string); ok {
+		return id
+	}
+	return ""
+}
+
+// GetInstanceID retrieves instance ID from context
+func GetInstanceID(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	if id, ok := ctx.Value("instance_id").(string); ok {
 		return id
 	}
 	return ""
