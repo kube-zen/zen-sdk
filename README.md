@@ -44,6 +44,22 @@ logger.Info("Controller started")
 
 ## Components
 
+### `pkg/config` - Configuration Validation
+
+Environment variable validation and configuration helpers.
+
+**Usage:**
+```go
+import "github.com/kube-zen/zen-sdk/pkg/config"
+
+v := config.NewValidator()
+dbHost := v.RequireString("DB_HOST")
+dbPort := v.RequireInt("DB_PORT")
+if err := v.Validate(); err != nil {
+    log.Fatal(err)
+}
+```
+
 ### `pkg/leader` - Leader Election
 
 Wrapper around controller-runtime's built-in leader election. Provides a simple, consistent API for enabling HA.
@@ -130,6 +146,38 @@ lifecycle.ShutdownHTTPServer(ctx, server, "my-component", 30*time.Second)
 - gRPC server graceful shutdown
 - Worker service coordination
 - Structured logging integration
+
+### `pkg/config` - Configuration Validation
+
+Environment variable validation and configuration helpers with batch validation support.
+
+**Usage:**
+```go
+import "github.com/kube-zen/zen-sdk/pkg/config"
+
+// Batch validation (collects all errors)
+v := config.NewValidator()
+dbHost := v.RequireString("DB_HOST")
+dbPort := v.RequireInt("DB_PORT")
+apiURL := v.RequireURL("API_URL")
+timeout := v.OptionalInt("TIMEOUT_SECONDS", 30)
+
+if err := v.Validate(); err != nil {
+    log.Fatal(err)
+}
+
+// Or immediate error handling
+dbHost, err := config.RequireEnv("DB_HOST")
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**Features:**
+- Batch validation (collect multiple errors)
+- Type-safe helpers (string, int, bool, URL, duration, CSV)
+- Production safety checks
+- Consistent error messages
 
 ### `pkg/gc` - Garbage Collection Primitives
 
