@@ -72,7 +72,7 @@ func DefaultConfig(serviceName string) Config {
 //
 // Returns a shutdown function that should be called during application shutdown,
 // and an error if initialization fails.
-func Init(ctx context.Context, config Config) (func(context.Context) error, error) {
+func Init(ctx context.Context, config Config) (func(context.Context) error, error) { //nolint:gocritic // hugeParam: config is intentionally passed by value for immutability
 	if initialized {
 		return func(context.Context) error { return nil }, nil
 	}
