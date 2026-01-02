@@ -213,7 +213,8 @@ func (e *EnhancedErrorLogger) LogError(err error, msg string, errorCode string, 
 	}
 
 	ctx := ExtractErrorContext(err, 3) // Skip frames for LogError -> caller
-	allFields := append(fields, //nolint:gocritic // appendAssign: fields slice is intentionally not modified, we create a new slice
+	//nolint:gocritic // appendAssign: fields slice is intentionally not modified, we create a new slice
+	allFields := append(fields,
 		zap.Error(err),
 		ErrorCategoryField(ctx.Category),
 	)
