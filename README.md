@@ -102,6 +102,35 @@ patch := webhook.GeneratePatch(obj, updates)
 patch := webhook.GenerateAddPatch("/metadata/labels/test", "value")
 ```
 
+### `pkg/lifecycle` - Graceful Shutdown
+
+Standardized graceful shutdown helpers for HTTP servers, gRPC servers, and worker services.
+
+**Usage:**
+```go
+import "github.com/kube-zen/zen-sdk/pkg/lifecycle"
+
+// Create shutdown context
+ctx, cancel := lifecycle.ShutdownContext(context.Background(), "my-component")
+defer cancel()
+
+// Start server
+go server.ListenAndServe()
+
+// Wait for shutdown signal
+<-ctx.Done()
+
+// Graceful shutdown
+lifecycle.ShutdownHTTPServer(ctx, server, "my-component", 30*time.Second)
+```
+
+**Features:**
+- Signal handling (`SIGINT`, `SIGTERM`)
+- HTTP server graceful shutdown
+- gRPC server graceful shutdown
+- Worker service coordination
+- Structured logging integration
+
 ### `pkg/gc` - Garbage Collection Primitives
 
 Shared GC evaluation primitives extracted from zen-gc and zen-watcher.
@@ -156,6 +185,7 @@ mgr := ctrl.NewManager(..., leader.Setup(leaderOpts))
 - [Metrics](examples/metrics_example.go)
 - [Logging](examples/logging_example.go)
 - [Webhook](examples/webhook_example.go)
+- [Lifecycle/Graceful Shutdown](pkg/lifecycle/README.md)
 - [zen-flow Migration](examples/zen-flow-migration.go)
 - [zen-lock Migration](examples/zen-lock-migration.go)
 
