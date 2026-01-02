@@ -69,7 +69,8 @@ func (s *FingerprintStrategy) GetWindow(defaultWindow time.Duration) time.Durati
 	return defaultWindow
 }
 
-func (s *FingerprintStrategy) ShouldCreate(deduper *Deduper, key DedupKey, content map[string]interface{}) bool { //nolint:gocritic // hugeParam: key is intentionally passed by value for immutability
+//nolint:gocritic // hugeParam: key is intentionally passed by value for immutability
+func (s *FingerprintStrategy) ShouldCreate(deduper *Deduper, key DedupKey, content map[string]interface{}) bool {
 	// Use existing Deduper logic (fingerprint-based)
 	return deduper.ShouldCreateWithContent(key, content)
 }
@@ -93,7 +94,8 @@ func (s *EventStreamStrategy) GetWindow(defaultWindow time.Duration) time.Durati
 	return shortWindow
 }
 
-func (s *EventStreamStrategy) ShouldCreate(deduper *Deduper, key DedupKey, content map[string]interface{}) bool { //nolint:gocritic // hugeParam: key is intentionally passed by value for immutability
+//nolint:gocritic // hugeParam: key is intentionally passed by value for immutability
+func (s *EventStreamStrategy) ShouldCreate(deduper *Deduper, key DedupKey, content map[string]interface{}) bool {
 	// Use existing Deduper logic but with shorter effective window
 	// The window adjustment is handled via GetWindow
 	return deduper.ShouldCreateWithContent(key, content)
@@ -113,7 +115,8 @@ func (s *KeyBasedStrategy) GetWindow(defaultWindow time.Duration) time.Duration 
 	return defaultWindow
 }
 
-func (s *KeyBasedStrategy) ShouldCreate(deduper *Deduper, key DedupKey, content map[string]interface{}) bool { //nolint:gocritic // hugeParam: key is intentionally passed by value for immutability
+//nolint:gocritic // hugeParam: key is intentionally passed by value for immutability
+func (s *KeyBasedStrategy) ShouldCreate(deduper *Deduper, key DedupKey, content map[string]interface{}) bool {
 	// Key-based dedup uses explicit fields
 	// If fields are specified, we could build a custom key, but for now
 	// we use the existing Deduper logic with the provided key

@@ -40,8 +40,8 @@ func MergeFilterConfigs(configs ...*FilterConfig) *FilterConfig {
 			Sources: make(map[string]SourceFilter),
 		}
 		if configs[0] != nil && configs[0].Sources != nil {
-			for k := range configs[0].Sources {
-				result.Sources[k] = configs[0].Sources[k] //nolint:gocritic // rangeValCopy: intentional copy for map assignment
+			for k := range configs[0].Sources { //nolint:gocritic // rangeValCopy: intentional copy for map assignment
+				result.Sources[k] = configs[0].Sources[k]
 			}
 		}
 		return result
@@ -78,6 +78,7 @@ func MergeFilterConfigs(configs ...*FilterConfig) *FilterConfig {
 }
 
 // mergeSourceFilters merges two SourceFilter objects
+//nolint:gocritic // hugeParam: f1 and f2 are intentionally passed by pointer for performance
 func mergeSourceFilters(f1, f2 *SourceFilter) SourceFilter {
 	result := SourceFilter{}
 
