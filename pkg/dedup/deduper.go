@@ -722,9 +722,9 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 	}
 
 	// 3. Check time-based bucket dedup (read-only)
-	// Only check bucket if we have a fingerprint (for fingerprint-based dedup)
+	// Only check bucket if we have a fingerprint and it wasn't expired (for fingerprint-based dedup)
 	// For key-only dedup, we rely on the cache check below
-	if fingerprintHash != "" {
+	if fingerprintHash != "" && !fingerprintExpired {
 		d.mu.RLock()
 		isDup := d.isDuplicateInBucket(keyStr, fingerprintHash, now)
 		d.mu.RUnlock()
