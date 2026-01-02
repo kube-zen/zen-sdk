@@ -23,11 +23,13 @@ func NewResourceResolver(discClient discovery.DiscoveryInterface) (*ResourceReso
 
 // ResolveGVR resolves a GroupVersionKind to GroupVersionResource
 func (r *ResourceResolver) ResolveGVR(gvk schema.GroupVersionKind) (schema.GroupVersionResource, error) {
-	gvr, err := r.mapper.ResourceFor(gvk)
+	// RESTMapper.KindFor expects GVR, but we have GVK
+	// Use RESTMapping which takes GVK and returns both GVK and GVR
+	mapping, err := r.mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 	if err != nil {
 		return schema.GroupVersionResource{}, fmt.Errorf("failed to resolve GVR for %s: %w", gvk, err)
 	}
-	return gvr, nil
+	return mapping.Resource, nil
 }
 
 // ExpectedGVKs defines the expected GroupVersionKinds we're looking for
