@@ -118,3 +118,9 @@ BUILD_TIME ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u +"%Y-
 GO_LDFLAGS = -X github.com/kube-zen/zen-sdk/cmd/zenctl/internal/version.Version=$(VERSION) \
              -X github.com/kube-zen/zen-sdk/cmd/zenctl/internal/version.GitCommit=$(GIT_COMMIT) \
              -X github.com/kube-zen/zen-sdk/cmd/zenctl/internal/version.BuildTime=$(BUILD_TIME)
+
+## oss-boundary: Run OSS boundary enforcement gate
+oss-boundary:
+	@echo "$(GREEN)Running OSS boundary gate...$(NC)"
+	@bash scripts/test/oss-boundary-gate.sh .
+	@echo "$(GREEN)✅ OSS boundary check passed$(NC)"
