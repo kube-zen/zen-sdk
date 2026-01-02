@@ -70,6 +70,16 @@ func ResourceID(id string) zap.Field {
 	return zap.String("resource_id", id)
 }
 
+// AdapterID creates an adapter_id field (for cluster components)
+func AdapterID(id string) zap.Field {
+	return zap.String("adapter_id", id)
+}
+
+// InstanceID creates an instance_id field (for cluster components)
+func InstanceID(id string) zap.Field {
+	return zap.String("instance_id", id)
+}
+
 // ResourceType creates a resource_type field
 func ResourceType(resourceType string) zap.Field {
 	return zap.String("resource_type", resourceType)
