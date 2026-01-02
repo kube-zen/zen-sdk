@@ -229,6 +229,25 @@ if f.Allow(observation) {
 - Dynamic configuration updates
 - Optional metrics interface
 
+### `pkg/http` - HTTP Client
+
+Hardened HTTP client with connection pooling, rate limiting, and structured logging.
+
+**Usage:**
+```go
+import "github.com/kube-zen/zen-sdk/pkg/http"
+
+client := http.NewClient(nil)
+resp, err := client.Get(ctx, "https://api.example.com/data")
+```
+
+**Features:**
+- Connection pooling (configurable via environment variables)
+- Rate limiting support
+- Structured logging integration
+- TLS configuration
+- Timeout management
+
 ### `pkg/config` - Configuration Validation
 
 Environment variable validation and configuration helpers with batch validation support.

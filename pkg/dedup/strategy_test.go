@@ -62,7 +62,15 @@ func TestFingerprintStrategy(t *testing.T) {
 		t.Error("Same content with different key should be deduplicated by fingerprint")
 	}
 
-	// Different content should create
+	// Different content should create (use different key to avoid bucket interference)
+	key3 := DedupKey{
+		Source:      "test",
+		Namespace:   "default",
+		Kind:        "Pod",
+		Name:        "test-pod-2", // Different name to avoid bucket key collision
+		Reason:      "test-reason",
+		MessageHash: "hash3",
+	}
 	content2 := map[string]interface{}{
 		"spec": map[string]interface{}{
 			"source":   "test",
@@ -70,13 +78,14 @@ func TestFingerprintStrategy(t *testing.T) {
 			"severity": "LOW", // Different severity
 		},
 	}
-	if !strategy.ShouldCreate(deduper, key1, content2) {
+	if !strategy.ShouldCreate(deduper, key3, content2) {
 		t.Error("Different content should create new observation")
 	}
 }
 
 func TestEventStreamStrategy(t *testing.T) {
-	deduper := NewDeduper(60, 1000)
+	// Use a shorter window (2 seconds) for testing
+	deduper := NewDeduper(2, 1000)
 	defer deduper.Stop()
 
 	strategy := &EventStreamStrategy{
@@ -108,7 +117,7 @@ func TestEventStreamStrategy(t *testing.T) {
 		t.Error("Duplicate within window should not create observation")
 	}
 
-	// Wait for window to expire
+	// Wait for window to expire (2 seconds + buffer)
 	time.Sleep(3 * time.Second)
 
 	// After window expires, should create again

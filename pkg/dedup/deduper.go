@@ -112,9 +112,9 @@ type Deduper struct {
 	enableAggregation bool                        // whether aggregation is enabled
 
 	// Cleanup control
-	stopCh  chan struct{}      // Stop channel for cleanup loop
-	wg      sync.WaitGroup     // Wait group for cleanup goroutine
-	stopOnce sync.Once         // Ensure Stop() is only called once
+	stopCh   chan struct{}  // Stop channel for cleanup loop
+	wg       sync.WaitGroup // Wait group for cleanup goroutine
+	stopOnce sync.Once      // Ensure Stop() is only called once
 }
 
 // parseSourceWindows parses per-source windows from environment variable
@@ -439,6 +439,8 @@ func (d *Deduper) isDuplicateFingerprintForSourceUnlocked(fingerprintHash, sourc
 	// Check if fingerprint is still within window
 	age := now.Sub(fp.timestamp)
 	if age >= time.Duration(windowSeconds)*time.Second {
+		// Expired, remove it and return false (not a duplicate)
+		delete(d.fingerprints, fingerprintHash)
 		return false // Expired, not a duplicate
 	}
 
@@ -702,22 +704,29 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 	}
 
 	// 3. Check time-based bucket dedup (read-only)
-	d.mu.RLock()
-	isDup := d.isDuplicateInBucket(keyStr, fingerprintHash, now)
-	d.mu.RUnlock()
-	if isDup {
-		if fingerprintHash != "" {
+	// Only check bucket if we have a fingerprint (for fingerprint-based dedup)
+	// For key-only dedup, we rely on the cache check below
+	if fingerprintHash != "" {
+		d.mu.RLock()
+		isDup := d.isDuplicateInBucket(keyStr, fingerprintHash, now)
+		d.mu.RUnlock()
+		if isDup {
 			// Update aggregation (needs write lock)
 			d.mu.Lock()
 			d.updateAggregationUnlocked(fingerprintHash, now)
 			d.mu.Unlock()
+			return false // Duplicate in bucket
 		}
-		return false // Duplicate in bucket
 	}
 
 	// 4. Check original cache-based dedup (read-only first)
+	// For fingerprint-based dedup, check cache by fingerprint; for key-based, check by key
+	cacheKey := keyStr
+	if fingerprintHash != "" {
+		cacheKey = fingerprintHash // Use fingerprint as cache key for fingerprint-based dedup
+	}
 	d.mu.RLock()
-	ent, exists := d.cache[keyStr]
+	ent, exists := d.cache[cacheKey]
 	if exists {
 		isExpired := now.Sub(ent.timestamp) >= ttl
 		d.mu.RUnlock()
@@ -725,24 +734,24 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 			// Update LRU and timestamp (needs write lock)
 			d.mu.Lock()
 			// Double-check after acquiring write lock
-			if ent, stillExists := d.cache[keyStr]; stillExists && now.Sub(ent.timestamp) < ttl {
-				d.updateLRUUnlocked(keyStr)
+			if ent, stillExists := d.cache[cacheKey]; stillExists && now.Sub(ent.timestamp) < ttl {
+				d.updateLRUUnlocked(cacheKey)
 				ent.timestamp = now
 				d.mu.Unlock()
 				return false // Duplicate in original cache
 			}
 			// Entry expired or removed, continue to add
-			if stillExists := d.cache[keyStr]; stillExists != nil {
-				delete(d.cache, keyStr)
-				d.removeFromLRUUnlocked(keyStr)
+			if stillExists := d.cache[cacheKey]; stillExists != nil {
+				delete(d.cache, cacheKey)
+				d.removeFromLRUUnlocked(cacheKey)
 			}
 			d.mu.Unlock()
 		} else {
 			// Entry expired, remove it (needs write lock)
 			d.mu.Lock()
-			if stillExists := d.cache[keyStr]; stillExists != nil {
-				delete(d.cache, keyStr)
-				d.removeFromLRUUnlocked(keyStr)
+			if stillExists := d.cache[cacheKey]; stillExists != nil {
+				delete(d.cache, cacheKey)
+				d.removeFromLRUUnlocked(cacheKey)
 			}
 			d.mu.Unlock()
 		}
@@ -766,7 +775,14 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 		d.addFingerprintUnlocked(fingerprintHash, now)
 		d.updateAggregationUnlocked(fingerprintHash, now)
 	}
-	d.addToCacheUnlocked(keyStr, now)
+	// Use fingerprint as cache key for fingerprint-based dedup, key for key-based dedup
+	// cacheKey is already declared above, just reuse it
+	if fingerprintHash != "" {
+		cacheKey = fingerprintHash
+	} else {
+		cacheKey = keyStr
+	}
+	d.addToCacheUnlocked(cacheKey, now)
 	d.mu.Unlock()
 
 	return true // First event, should create
