@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -110,8 +109,8 @@ func printFlowDetails(obj *unstructured.Unstructured) error {
 	if outputs, _, _ := unstructured.NestedSlice(status, "outputs"); outputs != nil {
 		fmt.Println("Outputs:")
 		for i, o := range outputs {
-			if output, ok := o.(map[string]interface{}); ok {
-				outputName, _, _ := unstructured.NestedString(output, "name")
+			if outputMap, ok := o.(map[string]interface{}); ok {
+				outputName, _, _ := unstructured.NestedString(outputMap, "name")
 				if outputName == "" {
 					outputName = fmt.Sprintf("output-%d", i+1)
 				}
@@ -119,7 +118,7 @@ func printFlowDetails(obj *unstructured.Unstructured) error {
 				fmt.Printf("  [%d] %s:\n", i+1, outputName)
 
 				// Active target
-				if at, _, _ := unstructured.NestedMap(output, "activeTarget"); at != nil {
+				if at, _, _ := unstructured.NestedMap(outputMap, "activeTarget"); at != nil {
 					if dr, _, _ := unstructured.NestedMap(at, "destinationRef"); dr != nil {
 						destName, _, _ := unstructured.NestedString(dr, "name")
 						destNamespace, _, _ := unstructured.NestedString(dr, "namespace")
@@ -130,8 +129,8 @@ func printFlowDetails(obj *unstructured.Unstructured) error {
 				}
 
 				// Failover info
-				failoverReason, _, _ := unstructured.NestedString(output, "failoverReason")
-				failoverTime, _, _ := unstructured.NestedString(output, "failoverTime")
+				failoverReason, _, _ := unstructured.NestedString(outputMap, "failoverReason")
+				failoverTime, _, _ := unstructured.NestedString(outputMap, "failoverTime")
 				if failoverReason != "" || failoverTime != "" {
 					fmt.Printf("    Last Failover:\n")
 					if failoverReason != "" {
