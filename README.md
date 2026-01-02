@@ -147,6 +147,25 @@ lifecycle.ShutdownHTTPServer(ctx, server, "my-component", 30*time.Second)
 - Worker service coordination
 - Structured logging integration
 
+### `pkg/retry` - Retry Logic
+
+Exponential backoff retry logic with context cancellation support for Kubernetes operations.
+
+**Usage:**
+```go
+import "github.com/kube-zen/zen-sdk/pkg/retry"
+
+err := retry.Do(ctx, retry.DefaultConfig(), func() error {
+    return client.Create(ctx, obj)
+})
+```
+
+**Features:**
+- Exponential backoff with configurable delays
+- Context cancellation support
+- Kubernetes error handling (timeout, conflict, etc.)
+- Generic support for functions with return values
+
 ### `pkg/config` - Configuration Validation
 
 Environment variable validation and configuration helpers with batch validation support.
