@@ -163,19 +163,19 @@ func (ef *ExpressionFilter) evaluateMacro(node *ASTNode, obs *unstructured.Unstr
 
 	switch macroName {
 	case "is_critical":
-		severity, _ := ef.getFieldValue("spec.severity", obs)
+		severity, _ := ef.getFieldValue("spec.severity", obs) //nolint:errcheck // Optional field, default to empty string if not found
 		return ef.compareEqual(severity, "CRITICAL"), nil
 
 	case "is_high":
-		severity, _ := ef.getFieldValue("spec.severity", obs)
+		severity, _ := ef.getFieldValue("spec.severity", obs) //nolint:errcheck // Optional field, default to empty string if not found
 		return ef.compareEqual(severity, "HIGH"), nil
 
 	case "is_security":
-		category, _ := ef.getFieldValue("spec.category", obs)
+		category, _ := ef.getFieldValue("spec.category", obs) //nolint:errcheck // Optional field, default to empty string if not found
 		return ef.compareEqual(category, "security"), nil
 
 	case "is_compliance":
-		category, _ := ef.getFieldValue("spec.category", obs)
+		category, _ := ef.getFieldValue("spec.category", obs) //nolint:errcheck // Optional field, default to empty string if not found
 		return ef.compareEqual(category, "compliance"), nil
 
 	default:
