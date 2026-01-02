@@ -698,6 +698,7 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 		fingerprintHash = GenerateFingerprint(content)
 
 		// Check fingerprint-based dedup first (more accurate) with source-specific window
+		// This check also removes expired fingerprints and their cache entries
 		d.mu.RLock()
 		isDup := d.isDuplicateFingerprintForSource(fingerprintHash, source, now)
 		d.mu.RUnlock()
@@ -707,6 +708,17 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 			d.updateAggregationUnlocked(fingerprintHash, now)
 			d.mu.Unlock()
 			return false // Duplicate fingerprint
+		}
+		// If fingerprint was expired and removed, skip cache check (cache entry already removed)
+		// Check if fingerprint still exists (if not, it was expired and removed)
+		d.mu.RLock()
+		_, fpExists := d.fingerprints[fingerprintHash]
+		d.mu.RUnlock()
+		if !fpExists {
+			// Fingerprint was expired and removed, cache entry was also removed
+			// Skip cache check and proceed to add new entry
+		} else {
+			// Fingerprint exists, continue with cache check below
 		}
 	}
 
