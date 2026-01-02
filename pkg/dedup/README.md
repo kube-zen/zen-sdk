@@ -65,5 +65,13 @@ The package supports multiple deduplication strategies via `dedup.GetStrategy()`
 
 ## Thread Safety
 
-All methods are thread-safe and can be called concurrently.
+All methods are thread-safe and can be called concurrently. The implementation uses fine-grained locking (RLock for reads, Lock for writes) to optimize concurrent performance.
+
+## Recent Improvements
+
+- **Deadlock Fix**: Fixed double-locking issue in `ShouldCreateWithContent` method
+- **Idempotent Stop**: `Stop()` method is now idempotent using `sync.Once`
+- **Fingerprint Expiration**: Expired fingerprints are automatically removed during duplicate checks
+- **Cache Key Selection**: Uses fingerprint as cache key for fingerprint-based dedup, key for key-based dedup
+- **Test Coverage**: All 12 tests passing, including LRU eviction, fingerprint strategy, and event stream strategy
 
