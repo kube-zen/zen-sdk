@@ -299,6 +299,7 @@ func GenerateFingerprint(content map[string]interface{}) string {
 // getWindowForSource returns the deduplication window in seconds for a given source
 // Returns source-specific window if configured, otherwise default window
 // Must be called with lock held
+//nolint:unused // Reserved for future use when external callers need locked version
 func (d *Deduper) getWindowForSource(source string) int {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
@@ -386,6 +387,7 @@ func (d *Deduper) isDuplicateInBucket(keyStr, fingerprintHash string, now time.T
 }
 
 // addToBucket adds the key to the appropriate time bucket (must be called with lock held)
+//nolint:unused // Reserved for future use when external callers need locked version
 func (d *Deduper) addToBucket(keyStr, fingerprintHash string, now time.Time) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -440,6 +442,7 @@ func (d *Deduper) isDuplicateFingerprintForSourceUnlocked(fingerprintHash, sourc
 }
 
 // addFingerprint adds or updates a fingerprint (must be called with lock held)
+//nolint:unused // Reserved for future use when external callers need locked version
 func (d *Deduper) addFingerprint(fingerprintHash string, now time.Time) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -753,6 +756,7 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 
 // cleanupExpiredForSource removes expired entries for a specific source (must be called with lock held)
 // Uses source-specific window if configured
+//nolint:unused // Reserved for future use when external callers need locked version
 func (d *Deduper) cleanupExpiredForSource(source string, now time.Time) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -791,6 +795,7 @@ func (d *Deduper) cleanupExpiredForSourceUnlocked(source string, now time.Time) 
 }
 
 // addToCache adds a new entry to cache with LRU eviction if needed (must be called with lock held)
+//nolint:unused // Reserved for future use when external callers need locked version
 func (d *Deduper) addToCache(keyStr string, timestamp time.Time) {
 	d.mu.Lock()
 	defer d.mu.Unlock()

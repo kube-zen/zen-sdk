@@ -259,7 +259,7 @@ func (f *Filter) extractObservationFields(observation *unstructured.Unstructured
 
 	// Extract rule from details (for sources like Kyverno)
 	rule := ""
-	detailsVal, _, _ := unstructured.NestedMap(observation.Object, "spec", "details")
+	detailsVal, _, _ := unstructured.NestedMap(observation.Object, "spec", "details") //nolint:errcheck // Optional field, ignore errors
 	if detailsVal != nil {
 		if r, ok := detailsVal["rule"].(string); ok && r != "" {
 			rule = r
@@ -548,7 +548,7 @@ func (f *Filter) getLowercasedSource(source string) string {
 	}
 	// Check cache first
 	if cached, ok := f.sourceCache.Load(source); ok {
-		return cached.(string)
+		return cached.(string) //nolint:errcheck // Type assertion is safe after Load check
 	}
 	// Compute and cache
 	lowercased := strings.ToLower(source)
@@ -558,7 +558,7 @@ func (f *Filter) getLowercasedSource(source string) string {
 
 // extractSourceAndFilter extracts source and gets source-specific filter
 func (f *Filter) extractSourceAndFilter(observation *unstructured.Unstructured, config *FilterConfig) (string, *SourceFilter) {
-	sourceVal, sourceFound, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "source")
+	sourceVal, sourceFound, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "source") //nolint:errcheck // Optional field, ignore errors
 	if !sourceFound || sourceVal == nil {
 		// No source - allow (will be handled elsewhere)
 		return "", nil
@@ -624,7 +624,7 @@ func (f *Filter) checkExpressionFilter(config *FilterConfig, observation *unstru
 	}
 
 	// Extract source for metrics
-	sourceVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "source")
+	sourceVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "source") //nolint:errcheck // Optional field, ignore errors
 	source := "unknown"
 	if sourceVal != nil {
 		source = strings.ToLower(fmt.Sprintf("%v", sourceVal))

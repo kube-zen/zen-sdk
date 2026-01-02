@@ -216,7 +216,7 @@ func (e *EnhancedErrorLogger) LogError(err error, msg string, errorCode string, 
 	allFields := append(fields,
 		zap.Error(err),
 		ErrorCategoryField(ctx.Category),
-	)
+	) //nolint:gocritic // appendAssign: fields slice is intentionally not modified, we create a new slice
 
 	if errorCode != "" {
 		allFields = append(allFields, ErrorCode(errorCode))
