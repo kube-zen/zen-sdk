@@ -126,7 +126,7 @@ func (f *Filter) AllowWithReason(observation *unstructured.Unstructured) (bool, 
 	defer func() {
 		if f.metrics != nil {
 			// Extract source for metrics (optimized with type assertion and caching)
-			sourceVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "source")
+			sourceVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "source") //nolint:errcheck // Optional field, ignore errors
 			source := "unknown"
 			if sourceVal != nil {
 				// Optimize: use type assertion first
@@ -225,25 +225,25 @@ type observationFields struct {
 
 // extractObservationFields extracts fields from observation for filtering
 func (f *Filter) extractObservationFields(observation *unstructured.Unstructured) observationFields {
-	severityVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "severity")
+	severityVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "severity") //nolint:errcheck // Optional field, ignore errors
 	severity := strings.ToUpper(fmt.Sprintf("%v", severityVal))
 
-	eventTypeVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "eventType")
+	eventTypeVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "eventType") //nolint:errcheck // Optional field, ignore errors
 	eventType := fmt.Sprintf("%v", eventTypeVal)
 
-	categoryVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "category")
+	categoryVal, _, _ := unstructured.NestedFieldCopy(observation.Object, "spec", "category") //nolint:errcheck // Optional field, ignore errors
 	category := fmt.Sprintf("%v", categoryVal)
 
 	// Extract namespace from resource or metadata
 	namespace := ""
-	resourceVal, _, _ := unstructured.NestedMap(observation.Object, "spec", "resource")
+	resourceVal, _, _ := unstructured.NestedMap(observation.Object, "spec", "resource") //nolint:errcheck // Optional field, ignore errors
 	if resourceVal != nil {
 		if ns, ok := resourceVal["namespace"].(string); ok && ns != "" {
 			namespace = ns
 		}
 	}
 	if namespace == "" {
-		namespace, _, _ = unstructured.NestedString(observation.Object, "metadata", "namespace")
+		namespace, _, _ = unstructured.NestedString(observation.Object, "metadata", "namespace") //nolint:errcheck // Optional field, ignore errors
 	}
 	if namespace == "" {
 		namespace = "default"
