@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/kube-zen/zen-sdk/cmd/zenctl/internal/client"
 	"github.com/kube-zen/zen-sdk/cmd/zenctl/internal/discovery"
@@ -11,7 +10,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/discovery/cached/disk"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
 
 type CheckResult struct {

@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"text/tabwriter"
@@ -90,4 +89,3 @@ Columns: NAMESPACE | NAME | ACTIVE_TARGET | ENTITLEMENT | ENTITLEMENT_REASON | R
 
 	return cmd
 }
-
