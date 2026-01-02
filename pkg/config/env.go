@@ -160,6 +160,96 @@ func ValidateProduction() error {
 	return nil
 }
 
+// ServiceConfigValidator validates service-specific configuration
+// This is a helper that can be used by services to validate their config
+type ServiceConfigValidator struct {
+	serviceName string
+	errors      []string
+}
+
+// NewServiceConfigValidator creates a new service config validator
+func NewServiceConfigValidator(serviceName string) *ServiceConfigValidator {
+	return &ServiceConfigValidator{
+		serviceName: serviceName,
+		errors:      []string{},
+	}
+}
+
+// Require adds a required env var check
+func (v *ServiceConfigValidator) Require(key string) string {
+	val, err := RequireEnv(key)
+	if err != nil {
+		v.errors = append(v.errors, err.Error())
+		return ""
+	}
+	return val
+}
+
+// RequireWithDefault adds an optional env var with default
+func (v *ServiceConfigValidator) RequireWithDefault(key, defaultValue string) string {
+	return RequireEnvWithDefault(key, defaultValue)
+}
+
+// RequireInt adds a required int env var check
+func (v *ServiceConfigValidator) RequireInt(key string) int {
+	val, err := RequireEnvInt(key)
+	if err != nil {
+		v.errors = append(v.errors, err.Error())
+		return 0
+	}
+	return val
+}
+
+// RequireIntWithDefault adds an optional int env var with default
+func (v *ServiceConfigValidator) RequireIntWithDefault(key string, defaultValue int) int {
+	return RequireEnvIntWithDefault(key, defaultValue)
+}
+
+// RequireURL adds a required URL env var check
+func (v *ServiceConfigValidator) RequireURL(key string) string {
+	val, err := RequireEnvURL(key)
+	if err != nil {
+		v.errors = append(v.errors, err.Error())
+		return ""
+	}
+	return val
+}
+
+// RequireSecret adds a required secret env var check with minimum length
+func (v *ServiceConfigValidator) RequireSecret(key string, minLength int) string {
+	val, err := RequireEnvSecret(key, minLength)
+	if err != nil {
+		v.errors = append(v.errors, err.Error())
+		return ""
+	}
+	return val
+}
+
+// RequireAtLeastOne adds a check that at least one of the keys is set
+func (v *ServiceConfigValidator) RequireAtLeastOne(keys []string) {
+	if err := RequireAtLeastOne(keys); err != nil {
+		v.errors = append(v.errors, err.Error())
+	}
+}
+
+// Validate returns all validation errors
+func (v *ServiceConfigValidator) Validate() error {
+	if len(v.errors) == 0 {
+		return nil
+	}
+	return fmt.Errorf("%s configuration validation failed:\n  - %s", v.serviceName, strings.Join(v.errors, "\n  - "))
+}
+
+// HasErrors returns true if there are validation errors
+func (v *ServiceConfigValidator) HasErrors() bool {
+	return len(v.errors) > 0
+}
+
+// Errors returns all validation errors
+func (v *ServiceConfigValidator) Errors() []string {
+	return v.errors
+}
+
 // RequireEnvDuration validates and returns a required duration environment variable
 func RequireEnvDuration(key string) (time.Duration, error) {
 	val, err := RequireEnv(key)
