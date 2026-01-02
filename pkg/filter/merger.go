@@ -40,8 +40,8 @@ func MergeFilterConfigs(configs ...*FilterConfig) *FilterConfig {
 			Sources: make(map[string]SourceFilter),
 		}
 		if configs[0] != nil && configs[0].Sources != nil {
-			for k, v := range configs[0].Sources {
-				result.Sources[k] = v
+			for k := range configs[0].Sources {
+				result.Sources[k] = configs[0].Sources[k] //nolint:gocritic // rangeValCopy: intentional copy for map assignment
 			}
 		}
 		return result
@@ -68,7 +68,7 @@ func MergeFilterConfigs(configs ...*FilterConfig) *FilterConfig {
 			}
 
 			// Merge existing filter with new filter
-			merged := mergeSourceFilters(existing, sourceFilter)
+			merged := mergeSourceFilters(&existing, &sourceFilter)
 			result.Sources[sourceName] = merged
 		}
 	}
@@ -77,7 +77,7 @@ func MergeFilterConfigs(configs ...*FilterConfig) *FilterConfig {
 }
 
 // mergeSourceFilters merges two SourceFilter objects
-func mergeSourceFilters(f1, f2 SourceFilter) SourceFilter {
+func mergeSourceFilters(f1, f2 *SourceFilter) SourceFilter {
 	result := SourceFilter{}
 
 	// MinSeverity: More restrictive (higher priority) wins

@@ -342,7 +342,7 @@ func (d *Deduper) checkRateLimit(source string, now time.Time) bool {
 	elapsed := now.Sub(tracker.lastRefill).Seconds()
 	tokensToAdd := int(elapsed * tracker.refillRate)
 	if tokensToAdd > 0 {
-		tracker.tokens = tracker.tokens + tokensToAdd
+		tracker.tokens += tokensToAdd
 		if tracker.tokens > tracker.maxTokens {
 			tracker.tokens = tracker.maxTokens
 		}
@@ -637,7 +637,7 @@ func (d *Deduper) Stop() {
 
 // ShouldCreate checks if an observation should be created (backward compatible)
 // Returns true if this is the first event (should create), false if duplicate within window
-func (d *Deduper) ShouldCreate(key DedupKey) bool {
+func (d *Deduper) ShouldCreate(key DedupKey) bool { //nolint:gocritic // hugeParam: key is intentionally passed by value for immutability
 	return d.ShouldCreateWithContent(key, nil)
 }
 
@@ -646,7 +646,7 @@ func (d *Deduper) ShouldCreate(key DedupKey) bool {
 // Returns true if this is the first event (should create), false if duplicate within window
 // Uses source-specific deduplication windows if configured
 // Optimized with fine-grained locking for better concurrent performance
-func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]interface{}) bool {
+func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]interface{}) bool { //nolint:gocritic // hugeParam: key is intentionally passed by value for immutability
 	keyStr := key.String()
 	now := time.Now()
 	source := key.Source
