@@ -441,8 +441,13 @@ func (d *Deduper) isDuplicateFingerprintForSourceUnlocked(fingerprintHash, sourc
 	// Check if fingerprint is still within window
 	age := now.Sub(fp.timestamp)
 	if age >= time.Duration(windowSeconds)*time.Second {
-		// Expired, remove it and return false (not a duplicate)
+		// Expired, remove it and also remove from cache (since cache uses fingerprint as key for fingerprint-based dedup)
 		delete(d.fingerprints, fingerprintHash)
+		// Also remove from cache if it exists (cache key is fingerprint for fingerprint-based dedup)
+		if _, exists := d.cache[fingerprintHash]; exists {
+			delete(d.cache, fingerprintHash)
+			d.removeFromLRUUnlocked(fingerprintHash)
+		}
 		return false // Expired, not a duplicate
 	}
 
@@ -771,16 +776,18 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 	if now.Sub(lastCleanup) > time.Second {
 		shouldCleanup = true
 	}
+
+	// 6. Add to all structures (write operations) - acquire lock once for all operations
+	d.mu.Lock()
 	
+	// Perform cleanup if needed (while we already hold the lock)
 	if shouldCleanup {
-		d.mu.Lock()
 		// Only cleanup expired entries for the current source to avoid removing unrelated entries
 		d.cleanupExpiredForSourceUnlocked(source, now)
 		d.lastCleanup = now
-		d.mu.Unlock()
 	}
-
-	// 6. Add to all structures (write operations)
+	
+	// Add to all structures
 	d.addToBucketUnlocked(keyStr, fingerprintHash, now)
 	if fingerprintHash != "" {
 		d.addFingerprintUnlocked(fingerprintHash, now)
