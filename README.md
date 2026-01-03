@@ -24,6 +24,8 @@ Zen SDK provides reusable components for Kubernetes operators and controllers, e
 go get github.com/kube-zen/zen-sdk@latest
 ```
 
+**New to controllers?** Check out our [Hello Controller example](examples/hello_controller.go) - a minimal, copy-paste ready controller that compiles in under 2 minutes!
+
 ```go
 import (
     "github.com/kube-zen/zen-sdk/pkg/leader"
