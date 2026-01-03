@@ -91,4 +91,3 @@ func RemoveFinalizerAndUpdate(ctx context.Context, c client.Client, obj client.O
 	}
 	return nil
 }
-

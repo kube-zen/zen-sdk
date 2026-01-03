@@ -219,11 +219,11 @@ func TestValidateGVR(t *testing.T) {
 
 func TestValidateGVRConfig(t *testing.T) {
 	tests := []struct {
-		name      string
-		group     string
-		version   string
-		resource  string
-		wantErr   bool
+		name     string
+		group    string
+		version  string
+		resource string
+		wantErr  bool
 	}{
 		{"valid", "apps.kube-zen.io", "v1alpha1", "jobflows", false},
 		{"empty version", "apps.kube-zen.io", "", "jobflows", true},
@@ -286,4 +286,3 @@ func TestValidateNameWithWhitespaceCheck(t *testing.T) {
 		})
 	}
 }
-

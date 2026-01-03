@@ -260,4 +260,3 @@ func TestMultipleFinalizers(t *testing.T) {
 		t.Errorf("Expected no finalizers, got %d", len(obj.GetFinalizers()))
 	}
 }
-
