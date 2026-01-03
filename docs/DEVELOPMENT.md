@@ -1,10 +1,10 @@
 # Development Guide
 
-This guide covers development setup, workflows, and best practices for {{ .projectName }}.
+This guide covers development setup, workflows, and best practices for zen-sdk.
 
 ## Prerequisites
 
-- Go 1.24 (see [Go Toolchain](#go-toolchain) section)
+- Go 1.25 (see [Go Toolchain](#go-toolchain) section)
 - kubectl configured to access a Kubernetes cluster
 - Docker (for building images)
 - Make
@@ -12,8 +12,8 @@ This guide covers development setup, workflows, and best practices for {{ .proje
 ## Installation
 
 ```bash
-git clone https://github.com/kube-zen/{{ .projectName }}.git
-cd {{ .projectName }}
+git clone https://github.com/kube-zen/zen-sdk.git
+cd zen-sdk
 go mod download
 ```
 
@@ -27,7 +27,7 @@ make check
 go test ./...
 
 # Build
-go build ./cmd/{{ .projectName }}
+go build ./...
 ```
 
 ## Development Workflow
@@ -72,9 +72,9 @@ make build-image
 
 ### Version
 
-- **Go 1.24** is the standard across all OSS repos
-- Specified in `go.mod`: `go 1.24`
-- Toolchain directive: Either use `toolchain go1.24.0` everywhere or nowhere (OSS consistency)
+- **Go 1.25** is the standard for zen-sdk
+- Specified in `go.mod`: `go 1.25.0`
+- Toolchain directive: Either use `toolchain go1.25.0` everywhere or nowhere (OSS consistency)
 
 ### go.mod Requirements
 
