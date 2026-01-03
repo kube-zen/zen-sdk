@@ -129,4 +129,3 @@ func WithMultipleContext(err error, context map[string]string) *ContextError {
 		Context: context,
 	}
 }
-

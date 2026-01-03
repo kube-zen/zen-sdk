@@ -28,15 +28,15 @@ import (
 type contextKey string
 
 const (
-	requestIDKey   contextKey = "request_id"
-	tenantIDKey    contextKey = "tenant_id"
-	clusterIDKey   contextKey = "cluster_id"
-	userIDKey      contextKey = "user_id"
-	traceIDKey     contextKey = "trace_id"
-	spanIDKey      contextKey = "span_id"
-	resourceIDKey  contextKey = "resource_id"
-	adapterIDKey   contextKey = "adapter_id"
-	instanceIDKey  contextKey = "instance_id"
+	requestIDKey  contextKey = "request_id"
+	tenantIDKey   contextKey = "tenant_id"
+	clusterIDKey  contextKey = "cluster_id"
+	userIDKey     contextKey = "user_id"
+	traceIDKey    contextKey = "trace_id"
+	spanIDKey     contextKey = "span_id"
+	resourceIDKey contextKey = "resource_id"
+	adapterIDKey  contextKey = "adapter_id"
+	instanceIDKey contextKey = "instance_id"
 )
 
 // WithRequestID adds request ID to context
@@ -168,28 +168,6 @@ func GetResourceID(ctx context.Context) string {
 		return ""
 	}
 	if id, ok := ctx.Value(resourceIDKey).(string); ok {
-		return id
-	}
-	return ""
-}
-
-// GetAdapterID retrieves adapter ID from context
-func GetAdapterID(ctx context.Context) string {
-	if ctx == nil {
-		return ""
-	}
-	if id, ok := ctx.Value(adapterIDKey).(string); ok {
-		return id
-	}
-	return ""
-}
-
-// GetInstanceID retrieves instance ID from context
-func GetInstanceID(ctx context.Context) string {
-	if ctx == nil {
-		return ""
-	}
-	if id, ok := ctx.Value(instanceIDKey).(string); ok {
 		return id
 	}
 	return ""

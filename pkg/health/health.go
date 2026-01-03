@@ -52,8 +52,6 @@ type InformerSyncChecker struct {
 	// GetInformers returns a map of informer names to HasSynced functions.
 	// The function should be safe to call concurrently.
 	GetInformers func() map[string]func() bool
-
-	mu sync.RWMutex
 }
 
 // NewInformerSyncChecker creates a new informer sync checker.
@@ -142,8 +140,6 @@ type ActivityChecker struct {
 
 	// MaxTimeSinceActivity is the maximum time since last activity before considering unhealthy.
 	MaxTimeSinceActivity time.Duration
-
-	mu sync.RWMutex
 }
 
 // NewActivityChecker creates a new activity checker.

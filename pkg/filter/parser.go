@@ -377,19 +377,20 @@ func (p *expressionParser) parseFieldPath() string {
 
 	for p.pos < len(p.expression) {
 		char := p.peekChar()
-		if (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9') || char == '_' {
+		switch {
+		case (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9') || char == '_':
 			p.pos++
-		} else if char == '.' && len(parts) == 0 {
+		case char == '.' && len(parts) == 0:
 			// First part before dot
 			parts = append(parts, p.expression[start:p.pos])
 			p.pos++
 			start = p.pos
-		} else if char == '.' && len(parts) > 0 {
+		case char == '.' && len(parts) > 0:
 			// Subsequent part
 			parts = append(parts, p.expression[start:p.pos])
 			p.pos++
 			start = p.pos
-		} else {
+		default:
 			break
 		}
 	}

@@ -269,12 +269,6 @@ func (l *Logger) WithContext(ctx context.Context) *Logger {
 	if resourceID := GetResourceID(ctx); resourceID != "" {
 		fields = append(fields, ResourceID(resourceID))
 	}
-	if adapterID := GetAdapterID(ctx); adapterID != "" {
-		fields = append(fields, AdapterID(adapterID))
-	}
-	if instanceID := GetInstanceID(ctx); instanceID != "" {
-		fields = append(fields, InstanceID(instanceID))
-	}
 
 	if len(fields) == 0 {
 		return l

@@ -109,7 +109,7 @@ func TestCompositeChecker(t *testing.T) {
 	checker1 := NewInformerSyncChecker(func() map[string]func() bool {
 		return map[string]func() bool{"informer1": func() bool { return true }}
 	})
-	checker2 := NewActivityChecker(func() time.Time { return time.Now() }, 5*time.Minute)
+	checker2 := NewActivityChecker(time.Now, 5*time.Minute)
 
 	composite := NewCompositeChecker(checker1, checker2)
 

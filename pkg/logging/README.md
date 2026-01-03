@@ -75,10 +75,6 @@ ctx = logging.WithNamespace(ctx, "default")
 ctx = logging.WithName(ctx, "my-resource")
 ctx = logging.WithKind(ctx, "Pod")
 
-// Cluster-specific context helpers
-ctx = logging.WithAdapterID(ctx, "adapter-123")
-ctx = logging.WithInstanceID(ctx, "instance-456")
-
 logger.WithContext(ctx).Info("Request processed")
 // Logs include: request_id, tenant_id, user_id, cluster_id, trace_id, resource_id automatically
 ```
@@ -92,8 +88,6 @@ Available context helpers:
 - `WithNamespace(ctx, ns)` - Add Kubernetes namespace
 - `WithName(ctx, name)` - Add Kubernetes resource name
 - `WithKind(ctx, kind)` - Add Kubernetes resource kind
-- `WithAdapterID(ctx, id)` - Add adapter ID (cluster components)
-- `WithInstanceID(ctx, id)` - Add instance ID (cluster components)
 
 ## Error Logging
 

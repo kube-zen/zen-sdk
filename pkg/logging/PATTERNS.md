@@ -154,8 +154,7 @@ func (p *Processor) ProcessEvent(ctx context.Context, event *Event) error {
     
     // Extract cluster context
     ctx = logging.WithClusterID(ctx, event.ClusterID)
-    ctx = logging.WithAdapterID(ctx, event.AdapterID)
-    ctx = logging.WithInstanceID(ctx, event.InstanceID)
+    // Note: For platform-specific adapter/instance ID, use github.com/kube-zen/shared/logctx
     
     logger.Info("Processing event",
         logging.Operation("process_event"),

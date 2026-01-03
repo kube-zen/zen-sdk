@@ -1,5 +1,8 @@
 # Zen SDK
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)](https://go.dev/)
+
 **Shared library for cross-cutting concerns across Zen tools.**
 
 Zen SDK provides reusable components for Kubernetes operators and controllers, eliminating code duplication across zen-flow, zen-lock, zen-watcher, and other Zen tools.

@@ -117,8 +117,8 @@ func RemoveOwnerReference(obj metav1.Object, ownerUID string) bool {
 	for i, ref := range refs {
 		if string(ref.UID) == ownerUID {
 			// Remove the reference
-			newRefs := append(refs[:i], refs[i+1:]...)
-			obj.SetOwnerReferences(newRefs)
+			refs = append(refs[:i], refs[i+1:]...)
+			obj.SetOwnerReferences(refs)
 			return true
 		}
 	}
