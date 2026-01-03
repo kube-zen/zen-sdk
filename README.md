@@ -337,6 +337,7 @@ mgr := ctrl.NewManager(..., leader.Setup(leaderOpts))
 
 ## Examples
 
+- **[Hello Controller](examples/hello_controller.go)** - Minimal, copy-paste ready controller example (compiles in <2 min)
 - [Leader Election](examples/leader_example.go)
 - [Metrics](examples/metrics_example.go)
 - [Logging](examples/logging_example.go)
