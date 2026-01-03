@@ -5,6 +5,11 @@
 *.so
 *.dylib
 
+# Build binaries
+zenctl
+zenctl-test
+bin/
+
 # Test binary, built with `go test -c`
 *.test
 
