@@ -356,7 +356,9 @@ func TestCopyAnnotations(t *testing.T) {
 
 func TestSetOwnerReference(t *testing.T) {
 	s := runtime.NewScheme()
-	corev1.AddToScheme(s)
+	if err := corev1.AddToScheme(s); err != nil {
+		t.Fatalf("Failed to add corev1 to scheme: %v", err)
+	}
 
 	owner := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -388,7 +390,9 @@ func TestSetOwnerReference(t *testing.T) {
 
 func TestEnsureOwnerReference(t *testing.T) {
 	s := runtime.NewScheme()
-	corev1.AddToScheme(s)
+	if err := corev1.AddToScheme(s); err != nil {
+		t.Fatalf("Failed to add corev1 to scheme: %v", err)
+	}
 
 	owner := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

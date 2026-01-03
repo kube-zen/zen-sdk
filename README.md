@@ -384,7 +384,7 @@ go get github.com/kube-zen/zen-sdk@latest
 
 ## Requirements
 
-- Go 1.24+
+- Go 1.25+
 - Kubernetes 1.26+
 - controller-runtime v0.18.0+
 

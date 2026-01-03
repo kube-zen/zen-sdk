@@ -45,7 +45,7 @@ func TestNewHTTPMetrics(t *testing.T) {
 	// Test middleware
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		_, _ = w.Write([]byte("OK")) // Ignore error in test handler
 	})
 
 	middleware := hm.Middleware("test-route")

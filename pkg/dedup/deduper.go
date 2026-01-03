@@ -492,6 +492,8 @@ func (d *Deduper) addFingerprintUnlocked(fingerprintHash string, now time.Time) 
 }
 
 // updateAggregation updates the aggregated event counter (must be called with lock held)
+// This is a public API wrapper for external use; internal code uses updateAggregationUnlocked directly.
+//nolint:unused // Public API for external use
 func (d *Deduper) updateAggregation(fingerprintHash string, now time.Time) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -521,6 +523,8 @@ func (d *Deduper) updateAggregationUnlocked(fingerprintHash string, now time.Tim
 
 // cleanupOldBuckets removes buckets that are outside the window (must be called with lock held)
 // Uses the maximum window across all sources to ensure we don't delete buckets too early
+// This is a public API wrapper for external use; internal code uses cleanupOldBucketsUnlocked directly.
+//nolint:unused // Public API for external use
 func (d *Deduper) cleanupOldBuckets(now time.Time) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -571,6 +575,8 @@ func (d *Deduper) cleanupOldBucketsUnlocked(now time.Time) {
 
 // cleanupOldFingerprints removes fingerprints outside the window (must be called with lock held)
 // Uses the maximum window across all sources to ensure we don't delete fingerprints too early
+// This is a public API wrapper for external use; internal code uses cleanupOldFingerprintsUnlocked directly.
+//nolint:unused // Public API for external use
 func (d *Deduper) cleanupOldFingerprints(now time.Time) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -597,6 +603,8 @@ func (d *Deduper) cleanupOldFingerprintsUnlocked(now time.Time) {
 
 // cleanupOldAggregations removes aggregated events outside the window (must be called with lock held)
 // Uses the maximum window across all sources to ensure we don't delete aggregations too early
+// This is a public API wrapper for external use; internal code uses cleanupOldAggregationsUnlocked directly.
+//nolint:unused // Public API for external use
 func (d *Deduper) cleanupOldAggregations(now time.Time) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -891,6 +899,8 @@ func (d *Deduper) addToCacheUnlocked(keyStr string, timestamp time.Time) {
 }
 
 // updateLRU moves key to end of LRU list (most recent) (must be called with lock held)
+// This is a public API wrapper for external use; internal code uses updateLRUUnlocked directly.
+//nolint:unused // Public API for external use
 func (d *Deduper) updateLRU(keyStr string) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
