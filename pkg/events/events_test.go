@@ -21,6 +21,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestNewRecorder(t *testing.T) {
@@ -33,10 +34,17 @@ func TestNewRecorder(t *testing.T) {
 	}
 }
 
+// mockRuntimeObject is a minimal runtime.Object implementation without GetName
+type mockRuntimeObject struct{}
+
+func (m *mockRuntimeObject) DeepCopyObject() runtime.Object {
+	return &mockRuntimeObject{}
+}
+
 func TestGetResourceName(t *testing.T) {
 	tests := []struct {
 		name     string
-		obj      interface{}
+		obj      runtime.Object
 		wantName string
 	}{
 		{
@@ -50,18 +58,14 @@ func TestGetResourceName(t *testing.T) {
 		},
 		{
 			name:     "object without GetName",
-			obj:      "string",
+			obj:      &mockRuntimeObject{},
 			wantName: "unknown",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var obj interface{} = tt.obj
-			if pod, ok := tt.obj.(*corev1.Pod); ok {
-				obj = pod
-			}
-			got := GetResourceName(obj.(interface{ GetName() string }))
+			got := GetResourceName(tt.obj)
 			if got != tt.wantName {
 				t.Errorf("GetResourceName() = %v, want %v", got, tt.wantName)
 			}

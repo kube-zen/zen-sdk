@@ -1,37 +1,10 @@
 # golangci-lint configuration for zen-sdk
-# Compatible with golangci-lint v2.x
-
-version: 2
+# Compatible with golangci-lint v1.x (CI builds from source which may be v1)
 
 run:
   timeout: 5m
   tests: true
   go: "1.25"
-
-linters-settings:
-  gofmt:
-    simplify: true
-  govet:
-    enable:
-      - shadow
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-  gosimple:
-    checks: ["all"]
-  staticcheck:
-    checks: ["all"]
-  # unused settings removed - no longer supported in latest golangci-lint
-  gocritic:
-    enabled-tags:
-      - performance
-      - diagnostic
-    disabled-checks:
-      - dupImport
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-      - wrapperFunc
 
 linters:
   enable:
@@ -44,14 +17,3 @@ linters:
     - gofmt
     - goimports
     - gocritic
-
-issues:
-  exclude-files:
-    - "examples/.*\\.go$"
-  exclude-rules:
-    - path: _test.go
-      linters:
-        - errcheck
-        - gocritic
-  max-issues-per-linter: 0
-  max-same-issues: 0
