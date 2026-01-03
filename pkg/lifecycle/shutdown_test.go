@@ -18,6 +18,7 @@ package lifecycle
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"sync"
 	"testing"
@@ -95,15 +96,23 @@ func TestShutdownHTTPServer(t *testing.T) {
 func TestShutdownHTTPServer_Timeout(t *testing.T) {
 	// Create a test server that takes a long time to respond
 	mux := http.NewServeMux()
-	requestStarted := make(chan bool)
+	requestStarted := make(chan bool, 1) // Buffered to prevent blocking
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		requestStarted <- true
+		select {
+		case requestStarted <- true:
+		default:
+		}
 		time.Sleep(2 * time.Second)
 		w.WriteHeader(http.StatusOK)
 	})
 
+	listener, err := net.Listen("tcp", ":0")
+	if err != nil {
+		t.Fatalf("Failed to create listener: %v", err)
+	}
+
 	server := &http.Server{
-		Addr:    ":0",
+		Addr:    listener.Addr().String(),
 		Handler: mux,
 	}
 
@@ -112,12 +121,8 @@ func TestShutdownHTTPServer_Timeout(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = server.ListenAndServe()
+		_ = server.Serve(listener)
 	}()
-
-	// Get the server address
-	time.Sleep(50 * time.Millisecond)
-	addr := server.Addr
 
 	// Make a request that will block
 	client := &http.Client{Timeout: 5 * time.Second}
@@ -125,11 +130,16 @@ func TestShutdownHTTPServer_Timeout(t *testing.T) {
 	clientWg.Add(1)
 	go func() {
 		defer clientWg.Done()
-		_, _ = client.Get("http://" + addr + "/")
+		_, _ = client.Get("http://" + listener.Addr().String() + "/")
 	}()
 
-	// Wait for request to start
-	<-requestStarted
+	// Wait for request to start (with timeout)
+	select {
+	case <-requestStarted:
+		// Request started
+	case <-time.After(2 * time.Second):
+		t.Fatal("Request did not start within timeout")
+	}
 	time.Sleep(10 * time.Millisecond)
 
 	// Create a context with timeout (not already cancelled)
@@ -137,7 +147,7 @@ func TestShutdownHTTPServer_Timeout(t *testing.T) {
 	defer cancel()
 
 	// Shutdown with very short timeout should fail
-	err := ShutdownHTTPServer(ctx, server, "test-component", 100*time.Millisecond)
+	err = ShutdownHTTPServer(ctx, server, "test-component", 100*time.Millisecond)
 	if err == nil {
 		t.Error("Expected error for timeout, got nil")
 	}

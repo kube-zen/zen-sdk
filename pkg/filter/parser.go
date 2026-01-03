@@ -391,10 +391,12 @@ func (p *expressionParser) parseFieldPath() string {
 			p.pos++
 			start = p.pos
 		default:
-			break
+			// Not part of field path, exit loop
+			goto done
 		}
 	}
 
+done:
 	if start < p.pos {
 		parts = append(parts, p.expression[start:p.pos])
 	}
