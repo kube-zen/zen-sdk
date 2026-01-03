@@ -125,9 +125,9 @@ while IFS= read -r file; do
 		continue
 	fi
 	
-	# Detect binary file types
+	# Detect binary file types (ELF, Mach-O, PE only - not shell scripts)
 	file_type=$(file -b "$file" 2>/dev/null || echo "")
-	if echo "$file_type" | grep -qE "ELF|Mach-O|PE|executable|shared object"; then
+	if echo "$file_type" | grep -qE "^(ELF|Mach-O|PE)"; then
 		# Check for SaaS markers in binary content
 		has_saas_marker=0
 		if command -v strings >/dev/null 2>&1; then
