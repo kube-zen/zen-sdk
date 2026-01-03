@@ -35,7 +35,7 @@ var GitOpsTrackingLabels = map[string]struct{}{
 	"fluxcd.io/part-of":                     {},
 	"kustomize.toolkit.fluxcd.io/name":      {},
 	"kustomize.toolkit.fluxcd.io/namespace": {},
-	"kustomize.toolkit.fluxcd.io/revision": {},
+	"kustomize.toolkit.fluxcd.io/revision":  {},
 }
 
 // GitOpsTrackingAnnotations contains common GitOps tool annotations that should NOT be copied to generated resources
@@ -228,4 +228,3 @@ func CopyAnnotations(source, target metav1.Object, filterGitOps bool) {
 func GetAccessor(obj runtime.Object) (metav1.Object, error) {
 	return meta.Accessor(obj)
 }
-

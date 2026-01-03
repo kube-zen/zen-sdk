@@ -68,10 +68,10 @@ func TestInformerSyncChecker_ReadinessCheck(t *testing.T) {
 func TestActivityChecker_ReadinessCheck(t *testing.T) {
 	now := time.Now()
 	tests := []struct {
-		name                string
-		lastActivity        time.Time
+		name                 string
+		lastActivity         time.Time
 		maxTimeSinceActivity time.Duration
-		wantErr             bool
+		wantErr              bool
 	}{
 		{
 			name:                 "recent activity",
@@ -129,4 +129,3 @@ func TestCompositeChecker(t *testing.T) {
 		t.Error("ReadinessCheck() error = nil, want error")
 	}
 }
-

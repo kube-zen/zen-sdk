@@ -53,8 +53,8 @@ func TestFilterGitOpsLabels(t *testing.T) {
 		{
 			name: "with GitOps labels",
 			labels: map[string]string{
-				"app":                        "my-app",
-				"app.kubernetes.io/instance": "my-instance",
+				"app":                         "my-app",
+				"app.kubernetes.io/instance":  "my-instance",
 				"argocd.argoproj.io/instance": "my-argocd",
 			},
 			expected: map[string]string{
@@ -64,7 +64,7 @@ func TestFilterGitOpsLabels(t *testing.T) {
 		{
 			name: "all GitOps labels",
 			labels: map[string]string{
-				"app.kubernetes.io/instance": "my-instance",
+				"app.kubernetes.io/instance":   "my-instance",
 				"app.kubernetes.io/managed-by": "helm",
 			},
 			expected: map[string]string{},
@@ -115,7 +115,7 @@ func TestFilterGitOpsAnnotations(t *testing.T) {
 		{
 			name: "with GitOps annotations",
 			annotations: map[string]string{
-				"description":                "my resource",
+				"description":                  "my resource",
 				"argocd.argoproj.io/sync-wave": "1",
 			},
 			expected: map[string]string{
@@ -334,7 +334,7 @@ func TestCopyAnnotations(t *testing.T) {
 	source := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				"description":                "my service",
+				"description":                  "my service",
 				"argocd.argoproj.io/sync-wave": "1",
 			},
 		},
@@ -433,4 +433,3 @@ func TestEnsureOwnerReference(t *testing.T) {
 		t.Error("EnsureOwnerReference() should not have added duplicate reference")
 	}
 }
-
