@@ -16,6 +16,7 @@ package filter
 
 import (
 	"testing"
+	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
@@ -75,7 +76,30 @@ func TestExpressionFilter_BasicComparisons(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			filter, err := NewExpressionFilter(tt.expression)
+			// Add timeout to prevent infinite loops
+			done := make(chan bool, 1)
+			var filter *ExpressionFilter
+			var err error
+			var result bool
+			var evalErr error
+
+			go func() {
+				filter, err = NewExpressionFilter(tt.expression)
+				if err != nil {
+					done <- true
+					return
+				}
+				result, evalErr = filter.Evaluate(obs)
+				done <- true
+			}()
+
+			select {
+			case <-done:
+				// Test completed
+			case <-time.After(5 * time.Second):
+				t.Fatalf("Test timed out after 5 seconds for expression: %s", tt.expression)
+			}
+
 			if err != nil {
 				if !tt.wantErr {
 					t.Fatalf("NewExpressionFilter() error = %v, wantErr %v", err, tt.wantErr)
@@ -83,9 +107,8 @@ func TestExpressionFilter_BasicComparisons(t *testing.T) {
 				return
 			}
 
-			result, err := filter.Evaluate(obs)
-			if (err != nil) != tt.wantErr {
-				t.Fatalf("Evaluate() error = %v, wantErr %v", err, tt.wantErr)
+			if (evalErr != nil) != tt.wantErr {
+				t.Fatalf("Evaluate() error = %v, wantErr %v", evalErr, tt.wantErr)
 			}
 			if result != tt.expected {
 				t.Errorf("Evaluate() = %v, want %v", result, tt.expected)
