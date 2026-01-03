@@ -175,4 +175,3 @@ func TestIsAlphanumeric(t *testing.T) {
 		})
 	}
 }
-

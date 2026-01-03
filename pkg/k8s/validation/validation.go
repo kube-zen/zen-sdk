@@ -178,4 +178,3 @@ func ValidateNameWithWhitespaceCheck(name string) error {
 
 	return ValidateDNS1123Subdomain(name)
 }
-

@@ -174,4 +174,3 @@ func GenerateNameWithHash(prefix, base string, maxLength int) string {
 func isAlphanumeric(r rune) bool {
 	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9')
 }
-
