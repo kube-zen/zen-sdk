@@ -22,6 +22,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func TestNewRecorder(t *testing.T) {
@@ -36,6 +37,10 @@ func TestNewRecorder(t *testing.T) {
 
 // mockRuntimeObject is a minimal runtime.Object implementation without GetName
 type mockRuntimeObject struct{}
+
+func (m *mockRuntimeObject) GetObjectKind() schema.ObjectKind {
+	return schema.EmptyObjectKind
+}
 
 func (m *mockRuntimeObject) DeepCopyObject() runtime.Object {
 	return &mockRuntimeObject{}

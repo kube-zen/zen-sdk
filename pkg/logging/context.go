@@ -28,13 +28,15 @@ import (
 type contextKey string
 
 const (
-	requestIDKey  contextKey = "request_id"
-	tenantIDKey   contextKey = "tenant_id"
-	clusterIDKey  contextKey = "cluster_id"
-	userIDKey     contextKey = "user_id"
-	traceIDKey    contextKey = "trace_id"
-	spanIDKey     contextKey = "span_id"
-	resourceIDKey contextKey = "resource_id"
+	requestIDKey   contextKey = "request_id"
+	tenantIDKey    contextKey = "tenant_id"
+	clusterIDKey   contextKey = "cluster_id"
+	userIDKey      contextKey = "user_id"
+	traceIDKey     contextKey = "trace_id"
+	spanIDKey      contextKey = "span_id"
+	resourceIDKey  contextKey = "resource_id"
+	adapterIDKey   contextKey = "adapter_id"
+	instanceIDKey  contextKey = "instance_id"
 )
 
 // WithRequestID adds request ID to context
