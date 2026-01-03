@@ -35,8 +35,6 @@ const (
 	traceIDKey    contextKey = "trace_id"
 	spanIDKey     contextKey = "span_id"
 	resourceIDKey contextKey = "resource_id"
-	adapterIDKey  contextKey = "adapter_id"
-	instanceIDKey contextKey = "instance_id"
 )
 
 // WithRequestID adds request ID to context
@@ -72,16 +70,6 @@ func WithSpanID(ctx context.Context, spanID string) context.Context {
 // WithResourceID adds a generic resource ID to context (for multi-tenant systems)
 func WithResourceID(ctx context.Context, resourceID string) context.Context {
 	return context.WithValue(ctx, resourceIDKey, resourceID)
-}
-
-// WithAdapterID adds adapter ID to context (for cluster components like zen-ingester)
-func WithAdapterID(ctx context.Context, adapterID string) context.Context {
-	return context.WithValue(ctx, adapterIDKey, adapterID)
-}
-
-// WithInstanceID adds instance ID to context (for cluster components like zen-ingester)
-func WithInstanceID(ctx context.Context, instanceID string) context.Context {
-	return context.WithValue(ctx, instanceIDKey, instanceID)
 }
 
 // GetRequestID retrieves request ID from context

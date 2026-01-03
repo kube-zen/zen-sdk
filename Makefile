@@ -73,51 +73,6 @@ check:
 test-race:
 	@go test -v -race -timeout=15m ./...
 
-## zenctl: Build zenctl CLI
-zenctl:
-	@echo "$(GREEN)Building zenctl...$(NC)"
-	@go build -ldflags "$(GO_LDFLAGS)" -o zenctl ./cmd/zenctl
-	@echo "$(GREEN)✅ zenctl built$(NC)"
-
-## zenctl-nowork: Build zenctl CLI without workspace (workaround for Go version mismatch)
-zenctl-nowork:
-	@echo "$(GREEN)Building zenctl (workspace disabled)...$(NC)"
-	@GOWORK=off go build -ldflags "$(GO_LDFLAGS)" -o zenctl ./cmd/zenctl
-	@echo "$(GREEN)✅ zenctl built$(NC)"
-
-## test-zenctl-nowork: Test zenctl without workspace
-test-zenctl-nowork:
-	@echo "$(GREEN)Testing zenctl (workspace disabled)...$(NC)"
-	@GOWORK=off go test ./cmd/zenctl/internal/...
-	@echo "$(GREEN)✅ zenctl tests passed$(NC)"
-
-## install-zenctl: Install zenctl to GOBIN
-install-zenctl:
-	@echo "$(GREEN)Installing zenctl...$(NC)"
-	@go install -ldflags "$(GO_LDFLAGS)" ./cmd/zenctl
-	@GOBIN=$$(go env GOBIN); \
-	if [ -z "$$GOBIN" ]; then \
-		GOBIN="$$(go env GOPATH)/bin"; \
-	fi; \
-	echo "$(GREEN)✅ zenctl installed to $$GOBIN$(NC)"
-
-## release-zenctl: Build zenctl for multiple architectures
-release-zenctl:
-	@echo "$(GREEN)Building zenctl releases...$(NC)"
-	@mkdir -p dist
-	@GOOS=linux GOARCH=amd64 go build -ldflags "$(GO_LDFLAGS)" -o dist/zenctl-linux-amd64 ./cmd/zenctl
-	@GOOS=linux GOARCH=arm64 go build -ldflags "$(GO_LDFLAGS)" -o dist/zenctl-linux-arm64 ./cmd/zenctl
-	@GOOS=darwin GOARCH=amd64 go build -ldflags "$(GO_LDFLAGS)" -o dist/zenctl-darwin-amd64 ./cmd/zenctl
-	@GOOS=darwin GOARCH=arm64 go build -ldflags "$(GO_LDFLAGS)" -o dist/zenctl-darwin-arm64 ./cmd/zenctl
-	@echo "$(GREEN)✅ zenctl releases built in dist/$(NC)"
-
-# Version and build info for ldflags
-VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
-GIT_COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-BUILD_TIME ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
-GO_LDFLAGS = -X github.com/kube-zen/zen-sdk/cmd/zenctl/internal/version.Version=$(VERSION) \
-             -X github.com/kube-zen/zen-sdk/cmd/zenctl/internal/version.GitCommit=$(GIT_COMMIT) \
-             -X github.com/kube-zen/zen-sdk/cmd/zenctl/internal/version.BuildTime=$(BUILD_TIME)
 
 ## oss-boundary: Run OSS boundary enforcement gate
 oss-boundary:

@@ -144,13 +144,13 @@ func (r *Reconciler) handleEvent(ctx context.Context, event watch.Event) {
 }
 ```
 
-## Cluster Components (zen-ingester, zen-egress)
+## Cluster Components
 
 ### Event Processing Pattern
 
 ```go
 func (p *Processor) ProcessEvent(ctx context.Context, event *Event) error {
-    logger := logging.NewLogger("zen-ingester").WithContext(ctx)
+    logger := logging.NewLogger("component-name").WithContext(ctx)
     
     // Extract cluster context
     ctx = logging.WithClusterID(ctx, event.ClusterID)
@@ -185,7 +185,7 @@ func (p *Processor) ProcessEvent(ctx context.Context, event *Event) error {
 
 ```go
 func (p *Processor) ProcessBatch(ctx context.Context, events []*Event) error {
-    logger := logging.NewLogger("zen-ingester").WithContext(ctx)
+    logger := logging.NewLogger("component-name").WithContext(ctx)
     
     logger.Info("Processing batch",
         logging.Operation("process_batch"),

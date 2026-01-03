@@ -23,6 +23,20 @@ else
     echo "  ⚠ check-no-private-refs.sh not found (skipping)"
 fi
 
+# S110: Check for committed binaries (zen-sdk must not ship binaries)
+echo ""
+echo "Checking for committed binaries..."
+if [ -f "$SCRIPT_DIR/scripts/ci/check-no-committed-binaries.sh" ]; then
+    if ! "$SCRIPT_DIR/scripts/ci/check-no-committed-binaries.sh"; then
+        echo "  ❌ Binary check failed"
+        FAILED=1
+    else
+        echo "  ✅ No committed binaries detected"
+    fi
+else
+    echo "  ⚠ check-no-committed-binaries.sh not found (skipping)"
+fi
+
 # Check for required files
 echo ""
 echo "Checking required files..."

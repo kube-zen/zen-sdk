@@ -10,6 +10,7 @@ This document defines the boundary between OSS and internal/proprietary componen
 - No operator CLIs
 - No SaaS integrations
 - No proprietary endpoints or authentication flows
+- **No committed binaries** (zen-sdk must not ship or commit any CLI binaries)
 
 ## zenctl-oss: OSS Operator CLI
 

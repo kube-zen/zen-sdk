@@ -104,6 +104,49 @@ while IFS= read -r file; do
 	fi
 done <<< "$CLI_GO_FILES"
 
+# OSS006: Committed binaries (ELF, Mach-O, PE executables)
+echo "Checking OSS006: Committed binaries..."
+# Allowlist: explicitly allowed binaries (none for zen-sdk)
+ALLOWLIST_PATTERNS=()
+# Find executable files and large files that might be binaries
+BINARY_CANDIDATES=$(find "$REPO_ROOT" -type f \( -perm -111 -o -size +1048576 \) 2>/dev/null | \
+	grep -vE "/(\.git|vendor|dist|node_modules|\.venv|\.terraform)/" || true)
+
+while IFS= read -r file; do
+	# Skip allowlisted files
+	skip=0
+	for pattern in "${ALLOWLIST_PATTERNS[@]}"; do
+		if [[ "$file" == *"$pattern"* ]]; then
+			skip=1
+			break
+		fi
+	done
+	if [ $skip -eq 1 ]; then
+		continue
+	fi
+	
+	# Detect binary file types
+	file_type=$(file -b "$file" 2>/dev/null || echo "")
+	if echo "$file_type" | grep -qE "ELF|Mach-O|PE|executable|shared object"; then
+		# Check for SaaS markers in binary content
+		has_saas_marker=0
+		if command -v strings >/dev/null 2>&1; then
+			binary_content=$(strings -n 8 "$file" 2>/dev/null || echo "")
+			if echo "$binary_content" | grep -qE "ZEN_API_BASE_URL|/v1/audit|tenant.*entitlement|entitlement.*tenant"; then
+				has_saas_marker=1
+				pattern=$(echo "$binary_content" | grep -E "ZEN_API_BASE_URL|/v1/audit|tenant.*entitlement|entitlement.*tenant" | head -1)
+			fi
+		fi
+		
+		rel_file="${file#$REPO_ROOT/}"
+		if [ $has_saas_marker -eq 1 ]; then
+			add_violation "OSS006" "$file" "0" "$pattern" "Binary file contains SaaS markers; zen-sdk must not ship binaries"
+		else
+			add_violation "OSS006" "$file" "0" "$file_type" "Committed binary file; zen-sdk must not ship binaries (add to .gitignore)"
+		fi
+	fi
+done <<< "$BINARY_CANDIDATES"
+
 # Report violations
 if [ $FAILED -eq 0 ]; then
 	echo "✅ PASS: OSS boundary check passed"
