@@ -259,4 +259,3 @@ func (c *CompositeChecker) StartupCheck(req *http.Request) error {
 	}
 	return nil
 }
-

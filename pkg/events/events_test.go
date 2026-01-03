@@ -101,4 +101,3 @@ func TestRecorder_Event(t *testing.T) {
 	// Should not panic even with nil client
 	recorder.Event(pod, corev1.EventTypeNormal, "TestReason", "Test message")
 }
-

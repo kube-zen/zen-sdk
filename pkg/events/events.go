@@ -105,4 +105,3 @@ func GetResourceName(obj runtime.Object) string {
 	}
 	return "unknown"
 }
-
