@@ -422,17 +422,21 @@ func (d *Deduper) addToBucketUnlocked(keyStr, fingerprintHash string, now time.T
 }
 
 // isDuplicateFingerprintForSource checks if this fingerprint was seen recently for a specific source (must be called with lock held)
-func (d *Deduper) isDuplicateFingerprintForSource(fingerprintHash, source string, now time.Time) bool {
+// isDuplicateFingerprintForSource checks if this fingerprint was seen recently (read-only check)
+// Returns (isDuplicate, needsCleanup) where needsCleanup indicates if expired fingerprint needs cleanup
+func (d *Deduper) isDuplicateFingerprintForSource(fingerprintHash, source string, now time.Time) (bool, bool) {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	return d.isDuplicateFingerprintForSourceUnlocked(fingerprintHash, source, now)
 }
 
-// isDuplicateFingerprintForSourceUnlocked checks if this fingerprint was seen recently (caller must hold lock)
-func (d *Deduper) isDuplicateFingerprintForSourceUnlocked(fingerprintHash, source string, now time.Time) bool {
+// isDuplicateFingerprintForSourceUnlocked checks if this fingerprint was seen recently (caller must hold read lock)
+// Returns (isDuplicate, needsCleanup) where needsCleanup indicates if expired fingerprint needs cleanup
+// NOTE: This function does NOT modify data structures - cleanup must be done separately with write lock
+func (d *Deduper) isDuplicateFingerprintForSourceUnlocked(fingerprintHash, source string, now time.Time) (bool, bool) {
 	fp, exists := d.fingerprints[fingerprintHash]
 	if !exists {
-		return false
+		return false, false
 	}
 
 	// Get source-specific window (caller must hold lock)
@@ -441,20 +445,25 @@ func (d *Deduper) isDuplicateFingerprintForSourceUnlocked(fingerprintHash, sourc
 	// Check if fingerprint is still within window
 	age := now.Sub(fp.timestamp)
 	if age >= time.Duration(windowSeconds)*time.Second {
-		// Expired, remove it and also remove from cache (since cache uses fingerprint as key for fingerprint-based dedup)
-		delete(d.fingerprints, fingerprintHash)
-		// Also remove from cache if it exists (cache key is fingerprint for fingerprint-based dedup)
-		if _, exists := d.cache[fingerprintHash]; exists {
-			delete(d.cache, fingerprintHash)
-			d.removeFromLRUUnlocked(fingerprintHash)
-		}
-		return false // Expired, not a duplicate
+		// Expired, needs cleanup (but don't do it here - caller must do it with write lock)
+		return false, true // Expired, not a duplicate, but needs cleanup
 	}
 
-	// Update count and timestamp
-	fp.count++
-	fp.timestamp = now
-	return true
+	// Update count and timestamp (read-only access, actual update happens in addFingerprintUnlocked)
+	// Note: We can't modify fp here since we only hold read lock
+	// The timestamp update will happen later when we add the fingerprint
+	return true, false // Duplicate, no cleanup needed
+}
+
+// cleanupExpiredFingerprintUnlocked removes an expired fingerprint and its cache entry (caller must hold write lock)
+func (d *Deduper) cleanupExpiredFingerprintUnlocked(fingerprintHash string) {
+	// Remove from fingerprints
+	delete(d.fingerprints, fingerprintHash)
+	// Also remove from cache if it exists (cache key is fingerprint for fingerprint-based dedup)
+	if _, exists := d.cache[fingerprintHash]; exists {
+		delete(d.cache, fingerprintHash)
+		d.removeFromLRUUnlocked(fingerprintHash)
+	}
 }
 
 // addFingerprint adds or updates a fingerprint (must be called with lock held)
@@ -713,8 +722,16 @@ func (d *Deduper) ShouldCreateWithContent(key DedupKey, content map[string]inter
 		// Check fingerprint-based dedup first (more accurate) with source-specific window
 		// This check also removes expired fingerprints and their cache entries
 		d.mu.RLock()
-		isDup := d.isDuplicateFingerprintForSource(fingerprintHash, source, now)
+		isDup, needsCleanup := d.isDuplicateFingerprintForSource(fingerprintHash, source, now)
 		d.mu.RUnlock()
+		
+		// Cleanup expired fingerprints if needed (requires write lock)
+		if needsCleanup {
+			d.mu.Lock()
+			d.cleanupExpiredFingerprintUnlocked(fingerprintHash)
+			d.mu.Unlock()
+		}
+		
 		if isDup {
 			// Update aggregation (needs write lock)
 			d.mu.Lock()
