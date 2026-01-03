@@ -95,7 +95,9 @@ func TestShutdownHTTPServer(t *testing.T) {
 func TestShutdownHTTPServer_Timeout(t *testing.T) {
 	// Create a test server that takes a long time to respond
 	mux := http.NewServeMux()
+	requestStarted := make(chan bool)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		requestStarted <- true
 		time.Sleep(2 * time.Second)
 		w.WriteHeader(http.StatusOK)
 	})
@@ -113,11 +115,26 @@ func TestShutdownHTTPServer_Timeout(t *testing.T) {
 		_ = server.ListenAndServe()
 	}()
 
+	// Get the server address
 	time.Sleep(50 * time.Millisecond)
+	addr := server.Addr
 
-	// Create a context that's already cancelled
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
+	// Make a request that will block
+	client := &http.Client{Timeout: 5 * time.Second}
+	var clientWg sync.WaitGroup
+	clientWg.Add(1)
+	go func() {
+		defer clientWg.Done()
+		_, _ = client.Get("http://" + addr + "/")
+	}()
+
+	// Wait for request to start
+	<-requestStarted
+	time.Sleep(10 * time.Millisecond)
+
+	// Create a context with timeout (not already cancelled)
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
 
 	// Shutdown with very short timeout should fail
 	err := ShutdownHTTPServer(ctx, server, "test-component", 100*time.Millisecond)
@@ -128,6 +145,7 @@ func TestShutdownHTTPServer_Timeout(t *testing.T) {
 	// Force stop the server
 	_ = server.Close()
 	wg.Wait()
+	clientWg.Wait()
 }
 
 func TestShutdownHTTPServer_DefaultTimeout(t *testing.T) {
