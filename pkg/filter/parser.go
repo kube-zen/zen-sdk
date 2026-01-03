@@ -142,13 +142,30 @@ func (p *expressionParser) parseComparison() (*ASTNode, error) {
 		return expr, nil
 	}
 
-	// Check for macro
-	if p.peekToken("is_") {
-		macroName := p.parseIdentifier()
-		return &ASTNode{
-			Type:  NodeTypeMacro,
-			Field: macroName,
-		}, nil
+	// Check for macro (identifiers starting with "is_")
+	// Peek ahead to see if we have "is_" followed by identifier characters
+	if p.pos+3 <= len(p.expression) {
+		peeked := strings.ToLower(p.expression[p.pos : p.pos+3])
+		if peeked == "is_" {
+			// Check if followed by identifier character (not whitespace or operator)
+			if p.pos+3 < len(p.expression) {
+				nextChar := p.expression[p.pos+3]
+				if (nextChar >= 'a' && nextChar <= 'z') || (nextChar >= 'A' && nextChar <= 'Z') || nextChar == '_' {
+					// Parse the full identifier
+					macroName := p.parseIdentifier()
+					// Verify it starts with "is_" (case-insensitive)
+					if strings.HasPrefix(strings.ToLower(macroName), "is_") {
+						return &ASTNode{
+							Type:  NodeTypeMacro,
+							Field: macroName,
+						}, nil
+					}
+					// Not a macro, this shouldn't happen but handle gracefully
+					// Reset position by re-parsing from start
+					p.pos -= len(macroName)
+				}
+			}
+		}
 	}
 
 	// Parse left operand (field or literal)
