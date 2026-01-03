@@ -70,7 +70,6 @@ func ResourceID(id string) zap.Field {
 	return zap.String("resource_id", id)
 }
 
-
 // ResourceType creates a resource_type field
 func ResourceType(resourceType string) zap.Field {
 	return zap.String("resource_type", resourceType)

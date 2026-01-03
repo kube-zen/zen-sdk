@@ -928,6 +928,7 @@ func (d *Deduper) updateLRUUnlocked(keyStr string) {
 
 // removeFromLRU removes key from LRU list (must be called with lock held)
 // This is a public API wrapper for external use; internal code uses removeFromLRUUnlocked directly.
+//
 //nolint:unused // Public API for external use
 func (d *Deduper) removeFromLRU(keyStr string) {
 	d.mu.Lock()

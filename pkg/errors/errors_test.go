@@ -28,13 +28,13 @@ func TestContextError_Error(t *testing.T) {
 		wantMsg string
 	}{
 		{
-			name: "error with message only",
-			err:  New("test_type", "test message"),
+			name:    "error with message only",
+			err:     New("test_type", "test message"),
 			wantMsg: "test message",
 		},
 		{
-			name: "error with underlying error",
-			err:  Wrap(errors.New("underlying error"), "test_type", "wrapped message"),
+			name:    "error with underlying error",
+			err:     Wrap(errors.New("underlying error"), "test_type", "wrapped message"),
 			wantMsg: "wrapped message: underlying error",
 		},
 	}
@@ -116,4 +116,3 @@ func TestWrapf(t *testing.T) {
 		t.Errorf("Wrapf underlying error = %v, want %v", err.Unwrap(), underlying)
 	}
 }
-
